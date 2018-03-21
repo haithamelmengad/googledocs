@@ -12,11 +12,12 @@
 <script type="text/jsx">
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AppContainer} from 'react-hot-loader';
+
+
 
 const render = () => {
-  const App = require('./app').default;
-  ReactDOM.render(<AppContainer><App /></AppContainer>, document.getElementById('App'));
+  const Register = require('./register').default;
+  ReactDOM.render(<Register />, document.getElementById('App'));
 }
 
 render();
