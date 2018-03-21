@@ -3,16 +3,18 @@ import models from './models/models';
 
 const router = express.Router();
 const User = models.User;
+const Document = models.Document;
+const Content = models.Content;
 
 // var validator = require('express-validator');
 
 module.exports = (passport) => {
     /*
-        Post request to /register:
-        Verifies the form completion and adds a user to the database
-        if the passwords are the same.
-        Sends {registered: true} response if the
-        user is successfully registered.
+      Post request to /register:
+      Verifies the form completion and adds a user to the database
+      if the passwords are the same.
+      Sends {registered: true} response if the
+      user is successfully registered.
     */
   router.post('/register', (req, res) => {
     console.log('Body', req.body);
@@ -38,7 +40,7 @@ module.exports = (passport) => {
 
   /*
     Uses passport to verify that the password and username match
-    a user in the databse
+    a user in the databse.
     Sends a {loggedIn: true} response if login is successful
   */
   router.post('/login', passport.authenticate('local'), (req, res) => {
@@ -46,11 +48,103 @@ module.exports = (passport) => {
   });
 
 
-//   {
-//     successRedirect: '/register',                                         //SHOULD I USE THIS?
-//     failureRedirect: '/login',
-//   }
-//                                                             // CREATE A LOGOUT BUTTON
+  /*
+    EXPECTED REQUEST:
+    { content: {contentObj},
+      title: 'myTitle',
+      owner: userRef,
+      contributors: [userRef]
+    }
+  */
+  /*
+      1. CREATE A CONTENT OBJECT
+      2. SEARCH FOR THE DOC BY ID
+      3. IF FOUND, REPLACE THE CONTENTS AND PUSH CONTENTS TO PREVIOUS VERSIONS
+    */
+  router.post('/document/:docId', (req, res) => {
+    /* create a new content object and save it to the database */
+    const cont = new Content({
+      content: req.body.content,
+    });
+    cont.save((err) => {
+      if (err) {
+        res.status(500).send({ err });
+        console.log(err);
+      } else {
+        console.log('Saved content');
+      }
+    });
+
+    /*
+      Find the document in the database and push a reference of its new content to
+      the versions array
+      If the document is not found, create a new document and save it to the database
+    */
+    Document.findByIdAndUpdate(req.params.docId, { $push: { versions: cont._id } }, (error, doc) => {
+      if (error) { // if the document is not found:
+        console.log(`${error}. The document has not been found`);
+      } else {
+        console.log('Updated Existing Document!');
+        res.send({ saved: true });
+      }
+    });
+  });
+
+  /* 
+    Create a new document for the user 
+  */
+  router.post('/user/:userId', (req, res) => {
+    const document = new Document({
+      title: req.body.title,
+      owner: req.params.userId,
+      // contributors: req.body.contributors, // lets not implement this yet
+      versions: [],
+    });
+    document.save((err) => {
+      if (err) {
+        res.status(500).send({ err });
+        console.log(err);
+      } else {
+        res.send({ saved: true });
+        console.log('Saved New Document!');
+      }
+    });
+  });
+
+  /* 
+    Get all Documents owned by the user 
+  */
+  router.get('/user/:userId', (req, res) => {
+    Document.find({owner: req.params.userId}, (error, ownedDocs) => {
+      if(error){
+        console.log(error);
+        res.status(500).send({ error });
+      } else {
+        res.send({ ownedDocs: ownedDocs });
+        conosle.log("Sent all documents associated with user " + req.params.userId)
+      }
+    });
+  });
+
+  /*
+    Get information about a specific document
+  */
+ router.get('/document/:docId', (req, res) => {
+   Document.findById(req.params.docId, (error, doc) => {
+     if(error){
+       console.log(error);
+       res.status(500).send({ error });
+     } else {
+       res.send({ document: doc });
+       console.log("Sent document " + req.params.docId)
+     }
+   })
+ })
+
+
+
+
+  // CREATE A LOGOUT BUTTON
   router.get('/logout', (req, res) => {
     req.logout();
     res.redirect('/login');

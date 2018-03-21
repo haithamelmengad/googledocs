@@ -32,11 +32,11 @@ const documentSchema = new Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
-  contributors: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-  }],
-  previousVersions: [mongoose.Schema.Types.ObjectId],
+  // contributors: [{
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: 'User',
+  // }],
+  versions: [mongoose.Schema.Types.ObjectId],
 });
 const Document = mongoose.model('Document', documentSchema);
 
