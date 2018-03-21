@@ -39,8 +39,8 @@ class Login extends React.Component {
       .then((res) => {
         if (res.loggedIn === true) {
           console.log('logged in success!!');
-          console.log(history)
-          history.push('/document');
+          console.log("Check user Id:", res.userId)
+          history.push(`/user/${res.userId}`); //CHECK
 
         } else {
           alert('failed to login successfully');

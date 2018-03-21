@@ -44,7 +44,8 @@ module.exports = (passport) => {
     Sends a {loggedIn: true} response if login is successful
   */
   router.post('/login', passport.authenticate('local'), (req, res) => {
-    res.send({ loggedIn: true });
+    console.log('Check req.user (make sure it has _id): ', req.user);
+    res.send({ userId: req.user._id, loggedIn: true }); // CHECK
   });
 
 
@@ -90,8 +91,8 @@ module.exports = (passport) => {
     });
   });
 
-  /* 
-    Create a new document for the user 
+  /*
+    Create a new document for the user
   */
   router.post('/user/:userId', (req, res) => {
     const document = new Document({
@@ -105,14 +106,14 @@ module.exports = (passport) => {
         res.status(500).send({ err });
         console.log(err);
       } else {
-        res.send({ saved: true });
+        res.status(200).send({ saved: true });
         console.log('Saved New Document!');
       }
     });
   });
 
-  /* 
-    Get all Documents owned by the user 
+  /*
+    Get all Documents owned by the user
   */
   router.get('/user/:userId', (req, res) => {
     Document.find({owner: req.params.userId}, (error, ownedDocs) => {
@@ -120,8 +121,8 @@ module.exports = (passport) => {
         console.log(error);
         res.status(500).send({ error });
       } else {
-        res.send({ ownedDocs: ownedDocs });
-        conosle.log("Sent all documents associated with user " + req.params.userId)
+        res.status(200).send({ ownedDocs: ownedDocs });
+        console.log("Sent all documents associated with user " + req.params.userId)
       }
     });
   });

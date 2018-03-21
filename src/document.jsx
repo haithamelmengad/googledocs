@@ -77,6 +77,7 @@ const styles = {
     cursor: 'pointer',
   },
 };
+
 export default class Document extends React.Component {
 
   constructor(props) {
@@ -86,9 +87,11 @@ export default class Document extends React.Component {
     this.state = {
       content: {},
       title: "",
-      owner: ""/*userRef*/,
-      contributors: ""/*[userRef]*/,
+      owner: "",
+      contributors: ""
     };
+
+
     const content = window.localStorage.getItem('content');
 
     if (content) {
@@ -106,9 +109,7 @@ export default class Document extends React.Component {
     this.handleKeyCommand = this.handleKeyCommand.bind(this);
 
     const saveContent = (content) => {
-
-
-     JSON.stringify(convertToRaw(content));
+     formContent =  JSON.stringify(convertToRaw(content));
     };
   }
 
@@ -204,6 +205,7 @@ export default class Document extends React.Component {
   }
 
   handleTitleClick(history) {
+    console.log('reached')
     history.push('/user');
   }
 

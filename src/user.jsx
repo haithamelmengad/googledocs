@@ -7,29 +7,7 @@ import RaisedButton from 'material-ui/RaisedButton';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import { HashRouter as Router, Route } from 'react-router-dom';
 import AppBar from 'material-ui/AppBar';
-
-const docArr = [
-  {
-    content: 'bunch of random words',
-    title: 'document 1'
-  },
-  {
-    content: 'bunch of randomer words',
-    title: 'document 2'
-  },
-  {
-    content: 'randomest words',
-    title: 'document 3'
-  },
-  {
-    content: 'bunch random words',
-    title: 'document 4'
-  },
-  {
-    content: 'bunch of words',
-    title: 'document 5'
-  },
-]
+import { Editor, EditorState, RichUtils, convertToRaw, convertFromRaw } from 'draft-js';
 
 
 
@@ -38,29 +16,69 @@ export default class User extends React.Component {
   constructor(props) {
     super(props);
     //initlizes intial state
+
     this.state = {
-      text: '',
-      documents: aquireDocuments(),
+      id: props.match.params.userId,
+      title: '',
+      documents: [],
     }
+    this.aquireDocuments()
   };
 
-  aquireDocuments(userID) {
-      //returns array of documents associated with user
-      return null
+
+  aquireDocuments() {
+    let id = this.state.id
+    fetch(`http://localhost:3000/user/${id}`)
+    .then(res => res.json())
+    .then((res) => {
+      this.setState({documents: res.ownedDocs})
+      return res
+    })
+    .catch((error) => {
+      console.log(error);
+      alert(error);
+    });
+  }
+
+  handleChange(event) {
+    console.log(this.state.title)
+    this.setState({title: event.target.value});
+ }
+
+
+ handleSubmit(event, history) {
+    event.preventDefault();
+    let id = this.state.id
+    fetch(`http://localhost:3000/user/${id}`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title: this.state.title,
+        versions: [],
+      }),
+    })
+    .then(res => res.json())
+    .then((res) => {
+      console.log(res)
+      if (res.saved === true) { // EXPECTED RESPONSE: { saved: true }
+        history.push('/document');
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+      alert("hello" + error);
+    });
+
   }
 
 
-  handleOpen(history) {
-    console.log(history);
-    history.push('/document')
-      console.log(history)
+  handleOpen(history, docId) {
+    history.push(`/document/${docId}`)
   }
 
-
-
-  handleToggle() { return this.setState({open: !this.state.open})};
-
-  handleClose()  { return this.setState({open: false})};
 
   render() {
    return (
@@ -73,38 +91,25 @@ export default class User extends React.Component {
       onTitleClick={() => alert('fuck')}
       />
       <h1> Your Documents </h1>
-      <form>
+      <form onSubmit={(event) => this.handleSubmit(event, history)}>
         <label>
           Name:
-          <input type="text" name="name" placeholder="Document Title"/>
+          <input type="text" name="name" placeholder="Document Title" onChange={this.handleChange.bind(this)}/>
         </label>
-        <input type="submit" value="Create New" />
+        <input type="submit" value="Create New"  />
       </form>
-      {docArr.map((item) =>
+      {(this.state.documents).map((item) =>
         <Card>
           <CardHeader
             title= {item.title}
-            subtitle={item.content}
+            subtitle={item.owner}
           />
           <CardActions>
-            <FlatButton label="Open" onClick={() => this.handleOpen(history)}/>
+            <FlatButton label="Open" onClick={() => this.handleOpen(history, item.id)}/>
             <FlatButton label="Delete" />
           </CardActions>
         </Card>
        )}
-       <h1> Shared with you </h1>
-       {docArr.map((item) =>
-         <Card>
-           <CardHeader
-             title= {item.title}
-             subtitle={item.content}
-           />
-           <CardActions>
-             <FlatButton label="Open" />
-             <FlatButton label="Delete" />
-           </CardActions>
-         </Card>
-        )}
      </div>
    )}
    />
