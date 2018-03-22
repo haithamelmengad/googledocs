@@ -85,20 +85,30 @@ export default class Document extends React.Component {
 
     // WE ALSO MIGHT WANT THE ID IN THE STATE
     this.state = {
-      content: {},
+      editorState: EditorState.createEmpty(),
       title: "",
       owner: "",
-      contributors: ""
     };
 
 
-    const content = window.localStorage.getItem('content');
+    const id = '5ab2ecde40e9dc0e58a378a1'
+    //props.match.params.docId
+    let content
 
-    if (content) {
-      this.state.editorState = EditorState.createWithContent(convertFromRaw(JSON.parse(content)));
-    } else {
-      this.state.editorState = EditorState.createEmpty();
-    }
+    fetch(`http://localhost:3000/document/${id}`)
+    .then(res => res.json())
+    .then((res) => {
+      content = res.versions
+      this.setState({
+        title: res.title,
+        owner: res.owner,
+      })
+      console.log(this.state)
+      })
+    .catch((error) => {
+      console.log(error);
+      alert(error);
+    });
 
     this.onChange = (editorState) => {
       const contentState = editorState.getCurrentContent();
@@ -109,10 +119,13 @@ export default class Document extends React.Component {
     this.handleKeyCommand = this.handleKeyCommand.bind(this);
 
     const saveContent = (content) => {
-     formContent =  JSON.stringify(convertToRaw(content));
+     console.log(content);
     };
   }
 
+  componentDidMount() {
+    console.log(content)
+  }
   // boiler plate
   handleKeyCommand(command, editorState) {
     const newState = RichUtils.handleKeyCommand(editorState, command);
@@ -182,31 +195,8 @@ export default class Document extends React.Component {
     this.onChange(RichUtils.toggleBlockType(this.state.editorState, 'ordered-list-item'));
   }
 
-
-  handleSaveClick(history) {
-    fetch('http://localhost:3000/document/:docId', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(this.state), //PUT THE ENTIRE DOCUMENT IN THE STATE
-    })
-    .then(res => res.json())
-    .then((res) => {
-      if (res.saved === true) { // EXPECTED RESPONSE: { saved: true }
-        history.push('/user');
-      }
-    })
-    .catch((error) => {
-      console.log(error);
-      alert(error);
-    });
-  }
-
   handleTitleClick(history) {
-    console.log('reached')
-    history.push('/user');
+    history.push(`/user/${this.state.owner}`);
   }
 
 
@@ -216,7 +206,7 @@ export default class Document extends React.Component {
         <Route render={({ history }) => (
           <div>
             <AppBar
-              title={<span style={styles.title}>{this.props.Title}</span>}
+              title={<span style={styles.title}>{this.state.title}</span>}
               onTitleClick={() => this.handleTitleClick(history)}
               iconElementLeft={<IconButton><NavigationClose /></IconButton>}
               iconElementRight={<FlatButton label="Save" onClick={() => this.handleSaveClick(history)} />}
