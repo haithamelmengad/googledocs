@@ -23,7 +23,9 @@ export default class User extends React.Component {
       documents: [],
     }
     this.aquireDocuments()
+    console.log(props.match.params)
   };
+
 
 
   aquireDocuments() {
@@ -108,7 +110,7 @@ export default class User extends React.Component {
             subtitle={item.owner}
           />
           <CardActions>
-            <FlatButton label="Open" onClick={() => this.handleOpen(history, item.id)}/>
+            <FlatButton label="Open" onClick={() => this.handleOpen(history, item._id)}/>
             <FlatButton label="Delete" />
           </CardActions>
         </Card>

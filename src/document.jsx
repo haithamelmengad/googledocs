@@ -83,18 +83,15 @@ export default class Document extends React.Component {
   constructor(props) {
     super(props);
 
-    console.log(props.match.params.docId)
     // WE ALSO MIGHT WANT THE ID IN THE STATE
     this.state = {
+      id: props.match.params.docId,
       editorState: EditorState.createEmpty(),
       title: "",
       owner: "",
     };
 
-
-    const id = '5ab2ecde40e9dc0e58a378a1'
-
-    fetch(`http://localhost:3000/document/${id}`)
+    fetch(`http://localhost:3000/document/${this.state.id}`)
     .then(res => res.json())
     .then((res) => {
       res.versions.entityMap = res.versions.entityMap || {}
@@ -111,15 +108,11 @@ export default class Document extends React.Component {
 
     this.onChange = (editorState) => {
       const contentState = editorState.getCurrentContent();
-      saveContent(contentState);
       return this.setState({ editorState });
     };
 
     this.handleKeyCommand = this.handleKeyCommand.bind(this);
 
-    const saveContent = (content) => {
-     console.log(content)
-    };
   }
 
 
@@ -193,9 +186,13 @@ export default class Document extends React.Component {
   }
 
   handleTitleClick(history) {
+    console.log(history)
     history.push(`/user/${this.state.owner}`);
   }
 
+  handleSaveClick(history) {
+      console.log(history)
+  }
 
   render() {
     return (
