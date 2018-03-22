@@ -1,32 +1,45 @@
+//React and react router imports
 import React from 'react';
+import { HashRouter as Router, Route } from 'react-router-dom';
+
+//Material UI asset imports
+import AppBar from 'material-ui/AppBar';
 import {Card, CardActions, CardHeader, CardText} from 'material-ui/Card';
 import FlatButton from 'material-ui/FlatButton';
 import Drawer from 'material-ui/Drawer';
 import MenuItem from 'material-ui/MenuItem';
 import RaisedButton from 'material-ui/RaisedButton';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
-import { HashRouter as Router, Route } from 'react-router-dom';
-import AppBar from 'material-ui/AppBar';
-import { Editor, EditorState, RichUtils, convertToRaw, convertFromRaw } from 'draft-js';
+
+//Draft JS imports
+import { EditorState, convertToRaw, convertFromRaw } from 'draft-js';
 
 
 
 export default class User extends React.Component {
 
+  /*
+    set intial state
+    then call aquireDocuments to gather information from dataBase
+  */
   constructor(props) {
     super(props);
-    //initlizes intial state
-
     this.state = {
       id: props.match.params.userId,
       title: '',
       documents: [],
     }
     this.aquireDocuments()
-    console.log(props.match.params)
   };
 
 
+  /*
+    aquireDocuments()
+    called once inside constructor
+    peforms get request
+    expected response: { ownedDocs: [...]}
+    the array contains all relevant data
+  */
 
   aquireDocuments() {
     let id = this.state.id
@@ -34,7 +47,6 @@ export default class User extends React.Component {
     .then(res => res.json())
     .then((res) => {
       this.setState({documents: res.ownedDocs})
-      return res
     })
     .catch((error) => {
       console.log(error);
@@ -42,17 +54,28 @@ export default class User extends React.Component {
     });
   }
 
+
+  /*
+    handleChange(event)
+    called when the new document input is modified
+    sets the new state for title
+    used in tandem with handleSubmit to manage the form
+    at the top of the page, which is a controlled component
+  */
   handleChange(event) {
-    console.log(this.state.title)
     this.setState({title: event.target.value});
  }
 
+ /*
+    handleSubmit(event, history)
+    called when user creates new document
+    POSTs a request to the sever to create a document
+    body of request contains a serialized, empty, editorState
+    then redirects back to the user page if document is saved
+ */
 
  handleSubmit(event, history) {
     event.preventDefault();
-    console.log(EditorState.createEmpty().getCurrentContent())
-    console.log(convertToRaw(EditorState.createEmpty().getCurrentContent()))
-    console.log(JSON.stringify(convertToRaw(EditorState.createEmpty().getCurrentContent())))
     let id = this.state.id
     fetch(`http://localhost:3000/user/${id}`, {
       method: 'POST',
@@ -67,23 +90,33 @@ export default class User extends React.Component {
     })
     .then(res => res.json())
     .then((res) => {
-      console.log(res)
       if (res.saved === true) { // EXPECTED RESPONSE: { saved: true }
         history.push(`/user/${id}`);
       }
     })
     .catch((error) => {
       console.log(error);
-      alert("hello" + error);
     });
 
   }
 
-
+/*
+  handleOpen(history, docId)
+  redirects user to desired document page
+*/
   handleOpen(history, docId) {
     history.push(`/document/${docId}`)
   }
 
+
+  /*
+    render notes:
+    - MuiThemeProvider must be the outmost component or render will crash
+    - Second layer must contain render={({ history })} => (...) and remaining
+      jsx must go in the parenthesis
+    - history must be passed to any function that wishes to use it
+    - all cards are created using a map function
+  */
 
   render() {
    return (
@@ -93,7 +126,6 @@ export default class User extends React.Component {
      <AppBar
       title="Username"
       iconClassNameRight="muidocs-icon-navigation-expand-more"
-      onTitleClick={() => alert('fuck')}
       />
       <h1> Your Documents </h1>
       <form onSubmit={(event) => this.handleSubmit(event, history)}>
@@ -121,5 +153,4 @@ export default class User extends React.Component {
  </MuiThemeProvider>
 );
  }
-
  }

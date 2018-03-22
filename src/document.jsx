@@ -1,5 +1,11 @@
+//react imports
 import React from 'react';
+import { HashRouter as Router, Route } from 'react-router-dom';
+
+//draft-js imports
 import { Editor, EditorState, RichUtils, convertToRaw, convertFromRaw } from 'draft-js';
+
+//material UI inputs
 import { Card, CardActions, CardHeader, CardMedia, CardTitle, CardText } from 'material-ui/Card';
 import { Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle } from 'material-ui/Toolbar';
 import RaisedButton from 'material-ui/RaisedButton';
@@ -22,11 +28,11 @@ import AppBar from 'material-ui/AppBar';
 import NavigationClose from 'material-ui/svg-icons/navigation/close';
 import FlatButton from 'material-ui/FlatButton';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
-import { HashRouter as Router, Route } from 'react-router-dom';
 import Dialog from 'material-ui/Dialog';
 
-
-const style = {
+//Style Object for paper
+//centers and widens
+const stylePaper = {
   height: 600,
   width: 400,
   marginLeft: 'auto',
@@ -35,7 +41,8 @@ const style = {
   padding: 20,
 };
 
-const styleMap =
+//customStyleMap for editor
+const styleMapEditor =
   {
     STRIKETHROUGH: {
       textDecoration: 'line-through',
@@ -70,21 +77,28 @@ const styleMap =
     BLACKBACK: {
       backgroundColor: 'black',
     },
-
   };
 
-const styles = {
+//style object for title
+//give title a 'pointer' when hovered over
+const styleTitle = {
   title: {
     cursor: 'pointer',
   },
 };
 
+
 export default class Document extends React.Component {
+  /*
+      constructor()
+      sets an initial state for the document
+      peforms a get request to the server
+      expected response is the unique document data
+
+  */
 
   constructor(props) {
     super(props);
-
-    // WE ALSO MIGHT WANT THE ID IN THE STATE
     this.state = {
       open: false,
       id: props.match.params.docId,
@@ -119,16 +133,25 @@ export default class Document extends React.Component {
 
   }
 
-  handleOpen() {
-   this.setState({open: true});
-  };
+  // boiler plate
+  // needed for editor to function
+  handleKeyCommand(command, editorState) {
+    const newState = RichUtils.handleKeyCommand(editorState, command);
+    if (newState) {
+      this.onChange(newState);
+      return 'handled';
+    }
+    return 'not-handled';
+  }
 
-  handleClose() {
-   this.setState({open: false});
-  };
 
+  /*
+    _onSaveClick()
+    called when the user saves the document
+    sends the serialized content and current title to the database to persist
+    when the document is confirmed saved the page reloads with the new version
+  */
   _onSaveClick() {
-    console.log('editor state is ' + this.state.editorState.getCurrentContent())
     fetch(`http://localhost:3000/document/version/${this.state.id}`, {
       method: 'POST',
       headers: {
@@ -142,28 +165,159 @@ export default class Document extends React.Component {
     })
     .then(res => res.json())
     .then((res) => {
-      console.log(res)
+      window.location.reload();
       })
     .catch((error) => {
       console.log(error);
-      alert("hello" + error);
     });
 
   }
 
-  // boiler plate
-  handleKeyCommand(command, editorState) {
-    const newState = RichUtils.handleKeyCommand(editorState, command);
-    if (newState) {
-      this.onChange(newState);
-      return 'handled';
-    }
-    return 'not-handled';
+  //opens title modal
+  handleOpen() {
+   this.setState({open: true});
+  };
+
+  //closes title modal
+  handleClose() {
+   this.setState({open: false});
+  };
+
+  //returns the user to their document overview page
+  handleLeftClick(history) {
+    history.push(`/user/${this.state.owner}`);
   }
+
+  /*
+    _handleChange(event)
+    handles the title and version changes
+    currently can only change title
+    title changes only persist after saving
+    Version change functionality doesn't work
+  */
+  _handleChange(event) {
+    const target = event.target;
+    const value = target.type === 'number' ? EditorState.createWithContent(convertFromRaw(this.state.oldVersions[event.target.value-1])) : target.value;
+    const name = target.name;
+
+    this.setState({
+      [name]: value
+    });
+
+  }
+
+
+  /*
+      Render NOTES:
+    - actions array is passed to the dialog(modal) element
+    - MuiThemeProvider must be the outmost component or render will crash
+    - Second layer must contain render={({ history })} => (...) and remaining
+      jsx must go in the parenthesis
+    - history must be passed to any function that wishes to use it
+    -
+  */
+  render() {
+    let actions = [
+        <FlatButton
+          label="Cancel"
+          primary={true}
+          onClick={this.handleClose.bind(this)}
+        />,
+        <FlatButton
+          label="Submit"
+          primary={true}
+          keyboardFocused={true}
+          onClick={this.handleClose.bind(this)}
+        />,
+      ];
+    return (
+      <MuiThemeProvider>
+        <Route render={({ history }) => (
+          <div>
+            <AppBar
+              title={<span style={styleTitle.title}>{this.state.title}: Version {this.state.version}</span>}
+              onTitleClick={() => this.handleOpen()}
+              iconElementLeft={<IconButton><NavigationClose /></IconButton> }
+              iconElementRight={<FlatButton label="Save" onClick={() => this._onSaveClick(history)} />}
+              onLeftIconButtonClick={() => this.handleLeftClick(history)}
+            />
+            <Dialog
+              title="Dialog With Actions"
+              actions={actions}
+              modal={false}
+              open={this.state.open}
+              onRequestClose={() => this.handleClose()}
+            >
+            <form>
+              <label>
+                Title:
+                <input type="text" name="title" placeholder={this.state.title} onChange={this._handleChange.bind(this, event)}/> <br/ >
+              </label>
+              <label>
+              Version:
+              <input type="text" name="editorState" placeholder={this.state.version} onChange={this._handleChange.bind(this, event)}/>
+              </label>
+            </form>
+            </Dialog>
+            <Toolbar>
+              <IconButton onClick={() => this._onBoldClick()}><BoldIcon /></IconButton>
+              <IconButton onClick={() => this._onItalicsClick()}><ItalicIcon /></IconButton>
+              <IconButton onClick={() => this._onUnderlineClick()}><UnderlineIcon /></IconButton>
+              <IconButton onClick={() => this._onStrikeClick()}><StrikethroughIcon /></IconButton>
+              <IconButton onClick={() => this.toggleBulletPoints()}><BulletedListIcon /></IconButton>
+              <IconButton onClick={() => this.toggleOrderedList()}><NumberedListIcon /></IconButton>
+              <IconMenu
+                iconButtonElement={<IconButton><PaintIcon /></IconButton>}
+                anchorOrigin={{ horizontal: 'left', vertical: 'top' }}
+                targetOrigin={{ horizontal: 'left', vertical: 'top' }}
+              >
+                <MenuItem primaryText="Blue" onClick={() => this._onBlueClick()} />
+                <MenuItem primaryText="Red" onClick={() => this._onRedClick()} />
+                <MenuItem primaryText="Yellow" onClick={() => this._onYellowClick()} />
+                <MenuItem primaryText="Green" onClick={() => this._onGreenClick()} />
+                <MenuItem primaryText="Black" />
+              </IconMenu>
+              <IconMenu
+                iconButtonElement={<IconButton><ColorFillIcon /></IconButton>}
+                anchorOrigin={{ horizontal: 'left', vertical: 'top' }}
+                targetOrigin={{ horizontal: 'left', vertical: 'top' }}
+              >
+                <MenuItem primaryText="Blue" onClick={() => this._onBlueBackClick()} />
+                <MenuItem primaryText="Red" onClick={() => this._onRedBackClick()} />
+                <MenuItem primaryText="Yellow" onClick={() => this._onYellowBackClick()} />
+                <MenuItem primaryText="Green" onClick={() => this._onGreenBackClick()} />
+                <MenuItem primaryText="Black" />
+              </IconMenu>
+              <IconButton><LeftIcon /></IconButton>
+              <IconButton><CenterIcon /></IconButton>
+              <IconButton><RightIcon /></IconButton>
+            </Toolbar>
+            <Paper style={stylePaper} zDepth={5}>
+              <Editor
+                customStyleMap={styleMapEditor}
+                editorState={this.state.editorState}
+                handleKeyCommand={this.handleKeyCommand}
+                onChange={this.onChange}
+              />
+            </Paper>
+          </div>
+   )}
+        />
+      </MuiThemeProvider>
+    );
+  }
+
+
+
+  /*
+    STYLE FUNCTIONS
+    Each function is called to format the selection in the editor.
+    The color functions could be refactored but the BOLD ITALIC and others will
+    likely need to stay
+  */
 
   // changes font to BOLD
   _onBoldClick() {
-    console.log('temp')
     this.onChange(RichUtils.toggleInlineStyle(this.state.editorState, 'BOLD'));
   }
 
@@ -221,108 +375,4 @@ export default class Document extends React.Component {
     this.onChange(RichUtils.toggleBlockType(this.state.editorState, 'ordered-list-item'));
   }
 
-  handleLeftClick(history) {
-    history.push(`/user/${this.state.owner}`);
-  }
-
-  _handleTitleChange(event) {
-    console.log(event.target.value)
-    this.setState({title: event.target.value})
-  }
-
-  _handleVersionChange(event) {
-    console.log(event.target.value)
-  //  this.setState({editorState: EditorState.createWithContent(convertFromRaw(this.state.versions[event.target.value-1]))})
-  }
-
-  render() {
-    let actions = [
-        <FlatButton
-          label="Cancel"
-          primary={true}
-          onClick={this.handleClose.bind(this)}
-        />,
-        <FlatButton
-          label="Submit"
-          primary={true}
-          keyboardFocused={true}
-          onClick={this.handleClose.bind(this)}
-        />,
-      ];
-    return (
-      <MuiThemeProvider>
-        <Route render={({ history }) => (
-          <div>
-            <AppBar
-              title={<span style={styles.title}>{this.state.title}: Version {this.state.version}</span>}
-              onTitleClick={() => this.handleOpen()}
-              iconElementLeft={<IconButton><NavigationClose /></IconButton> }
-              iconElementRight={<FlatButton label="Save" onClick={() => this._onSaveClick(history)} />}
-              onLeftIconButtonClick={() => this.handleLeftClick(history)}
-            />
-            <Dialog
-              title="Dialog With Actions"
-              actions={actions}
-              modal={false}
-              open={this.state.open}
-              onRequestClose={() => this.handleClose()}
-            >
-            <form>
-              <label>
-                Title:
-                <input type="text" name="title" placeholder={this.state.title} onChange={this._handleTitleChange.bind(this, event)}/> <br/ >
-              </label>
-              <label>
-              Version:
-              <input type="text" name="version" placeholder={this.state.version} onChange={this._handleVersionChange.bind(this, event)}/>
-              </label>
-            </form>
-            </Dialog>
-            <Toolbar>
-              <IconButton onClick={() => this._onBoldClick()}><BoldIcon /></IconButton>
-              <IconButton onClick={() => this._onItalicsClick()}><ItalicIcon /></IconButton>
-              <IconButton onClick={() => this._onUnderlineClick()}><UnderlineIcon /></IconButton>
-              <IconButton onClick={() => this._onStrikeClick()}><StrikethroughIcon /></IconButton>
-              <IconButton onClick={() => this.toggleBulletPoints()}><BulletedListIcon /></IconButton>
-              <IconButton onClick={() => this.toggleOrderedList()}><NumberedListIcon /></IconButton>
-              <IconMenu
-                iconButtonElement={<IconButton><PaintIcon /></IconButton>}
-                anchorOrigin={{ horizontal: 'left', vertical: 'top' }}
-                targetOrigin={{ horizontal: 'left', vertical: 'top' }}
-              >
-                <MenuItem primaryText="Blue" onClick={() => this._onBlueClick()} />
-                <MenuItem primaryText="Red" onClick={() => this._onRedClick()} />
-                <MenuItem primaryText="Yellow" onClick={() => this._onYellowClick()} />
-                <MenuItem primaryText="Green" onClick={() => this._onGreenClick()} />
-                <MenuItem primaryText="Black" />
-              </IconMenu>
-              <IconMenu
-                iconButtonElement={<IconButton><ColorFillIcon /></IconButton>}
-                anchorOrigin={{ horizontal: 'left', vertical: 'top' }}
-                targetOrigin={{ horizontal: 'left', vertical: 'top' }}
-              >
-                <MenuItem primaryText="Blue" onClick={() => this._onBlueBackClick()} />
-                <MenuItem primaryText="Red" onClick={() => this._onRedBackClick()} />
-                <MenuItem primaryText="Yellow" onClick={() => this._onYellowBackClick()} />
-                <MenuItem primaryText="Green" onClick={() => this._onGreenBackClick()} />
-                <MenuItem primaryText="Black" />
-              </IconMenu>
-              <IconButton><LeftIcon /></IconButton>
-              <IconButton><CenterIcon /></IconButton>
-              <IconButton><RightIcon /></IconButton>
-            </Toolbar>
-            <Paper style={style} zDepth={5}>
-              <Editor
-                customStyleMap={styleMap}
-                editorState={this.state.editorState}
-                handleKeyCommand={this.handleKeyCommand}
-                onChange={this.onChange}
-              />
-            </Paper>
-          </div>
-   )}
-        />
-      </MuiThemeProvider>
-    );
-  }
  }
