@@ -62,34 +62,45 @@ module.exports = (passport) => {
       2. SEARCH FOR THE DOC BY ID
       3. IF FOUND, REPLACE THE CONTENTS AND PUSH CONTENTS TO PREVIOUS VERSIONS
     */
-  router.post('/document/:docId', (req, res) => {
-    /* create a new content object and save it to the database */
-    const cont = new Content({
-      content: req.body.content,
-    });
-    cont.save((err) => {
-      if (err) {
-        res.status(500).send({ err });
-        console.log(err);
-      } else {
-        console.log('Saved content');
-      }
-    });
-
+  router.post('/document/version/:docId', (req, res) => {    
     /*
-      Find the document in the database and push a reference of its new content to
-      the versions array
-      If the document is not found, create a new document and save it to the database
+      Find the document in the database and push its current content to the versions array
+      EXPECTED REQUEST: { content: {contentObj} }
     */
-    Document.findByIdAndUpdate(req.params.docId, { $push: { versions: cont._id } }, (error, doc) => {
-      if (error) { // if the document is not found:
+    Document.findByIdAndUpdate(req.params.docId, { $push: { versions: req.content} }, (error, doc) => {
+      if (error) {
         console.log(`${error}. The document has not been found`);
       } else {
-        console.log('Updated Existing Document!');
+        console.log('Versioned up the Existing Document!');
         res.send({ saved: true });
       }
     });
   });
+
+  /*
+    As the user types, the current content is updated.
+    EXPECTED REQUEST: { content: {contentObj} }
+  */
+
+  router.post('/document/:docId', (req, res) => {
+    Document.findByIdAndUpdate(req.params.docId, {$set: {currentContent: req.content}}, (error, doc) => {
+      if(error){
+        console.log(error, 'the document has not been found');
+      }else{
+        console.log('Updated the current document in the database!');
+        res.send({ updated: true });
+      }
+    })
+  })
+
+
+
+
+
+
+
+
+
 
   /*
     Create a new document for the user
@@ -126,6 +137,21 @@ module.exports = (passport) => {
       }
     });
   });
+
+/*
+  get all the documents that the user contributes to
+  TEMPORARY --> DONT IMPLEMENT YET
+*/
+
+router.get('/user/:userId', (req, res) => {
+  Document.find({contributors: req.params.userId})
+})
+
+
+
+
+
+
 
   /*
     Get information about a specific document
