@@ -94,9 +94,9 @@ export default class Document extends React.Component {
     fetch(`http://localhost:3000/document/${this.state.id}`)
     .then(res => res.json())
     .then((res) => {
-      res.versions.entityMap = res.versions.entityMap || {}
+      res.versions[res.versions.length-1].entityMap = res.versions.entityMap || {}
       this.setState({
-        editorState: EditorState.createWithContent(convertFromRaw(res.versions)),
+        editorState: EditorState.createWithContent(convertFromRaw(res.versions[res.versions.length-1])),
         title: res.title,
         owner: res.owner,
       })
@@ -115,6 +115,28 @@ export default class Document extends React.Component {
 
   }
 
+  _onSaveClick() {
+    console.log('editor state is ' + this.state.editorState.getCurrentContent())
+    fetch(`http://localhost:3000/document/version/${this.state.id}`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        content: convertToRaw(this.state.editorState.getCurrentContent()),
+      }),
+    })
+    .then(res => res.json())
+    .then((res) => {
+      console.log(res)
+      })
+    .catch((error) => {
+      console.log(error);
+      alert("hello" + error);
+    });
+
+  }
 
   // boiler plate
   handleKeyCommand(command, editorState) {
@@ -128,6 +150,7 @@ export default class Document extends React.Component {
 
   // changes font to BOLD
   _onBoldClick() {
+    console.log('temp')
     this.onChange(RichUtils.toggleInlineStyle(this.state.editorState, 'BOLD'));
   }
 
@@ -190,10 +213,6 @@ export default class Document extends React.Component {
     history.push(`/user/${this.state.owner}`);
   }
 
-  handleSaveClick(history) {
-      console.log(history)
-  }
-
   render() {
     return (
       <MuiThemeProvider>
@@ -203,24 +222,24 @@ export default class Document extends React.Component {
               title={<span style={styles.title}>{this.state.title}</span>}
               onTitleClick={() => this.handleTitleClick(history)}
               iconElementLeft={<IconButton><NavigationClose /></IconButton>}
-              iconElementRight={<FlatButton label="Save" onClick={() => this.handleSaveClick(history)} />}
+              iconElementRight={<FlatButton label="Save" onClick={() => this._onSaveClick(history)} />}
             />
             <Toolbar>
-              <IconButton onClick={() => this._onBoldClick}><BoldIcon /></IconButton>
-              <IconButton onClick={() => this._onItalicsClick}><ItalicIcon /></IconButton>
-              <IconButton onClick={() => this._onUnderlineClick}><UnderlineIcon /></IconButton>
-              <IconButton onClick={() => this._onStrikeClick}><StrikethroughIcon /></IconButton>
-              <IconButton onClick={() => this.toggleBulletPoints}><BulletedListIcon /></IconButton>
-              <IconButton onClick={() => this.toggleOrderedList}><NumberedListIcon /></IconButton>
+              <IconButton onClick={() => this._onBoldClick()}><BoldIcon /></IconButton>
+              <IconButton onClick={() => this._onItalicsClick()}><ItalicIcon /></IconButton>
+              <IconButton onClick={() => this._onUnderlineClick()}><UnderlineIcon /></IconButton>
+              <IconButton onClick={() => this._onStrikeClick()}><StrikethroughIcon /></IconButton>
+              <IconButton onClick={() => this.toggleBulletPoints()}><BulletedListIcon /></IconButton>
+              <IconButton onClick={() => this.toggleOrderedList()}><NumberedListIcon /></IconButton>
               <IconMenu
                 iconButtonElement={<IconButton><PaintIcon /></IconButton>}
                 anchorOrigin={{ horizontal: 'left', vertical: 'top' }}
                 targetOrigin={{ horizontal: 'left', vertical: 'top' }}
               >
-                <MenuItem primaryText="Blue" onClick={() => this._onBlueClick} />
-                <MenuItem primaryText="Red" onClick={() => this._onRedClick} />
-                <MenuItem primaryText="Yellow" onClick={() => this._onYellowClick} />
-                <MenuItem primaryText="Green" onClick={() => this._onGreenClick} />
+                <MenuItem primaryText="Blue" onClick={() => this._onBlueClick()} />
+                <MenuItem primaryText="Red" onClick={() => this._onRedClick()} />
+                <MenuItem primaryText="Yellow" onClick={() => this._onYellowClick()} />
+                <MenuItem primaryText="Green" onClick={() => this._onGreenClick()} />
                 <MenuItem primaryText="Black" />
               </IconMenu>
               <IconMenu
@@ -228,15 +247,15 @@ export default class Document extends React.Component {
                 anchorOrigin={{ horizontal: 'left', vertical: 'top' }}
                 targetOrigin={{ horizontal: 'left', vertical: 'top' }}
               >
-                <MenuItem primaryText="Blue" onClick={() => this._onBlueBackClick} />
-                <MenuItem primaryText="Red" onClick={() => this._onRedBackClick} />
-                <MenuItem primaryText="Yellow" onClick={() => this._onYellowBackClick} />
-                <MenuItem primaryText="Green" onClick={() => this._onGreenBackClick} />
+                <MenuItem primaryText="Blue" onClick={() => this._onBlueBackClick()} />
+                <MenuItem primaryText="Red" onClick={() => this._onRedBackClick()} />
+                <MenuItem primaryText="Yellow" onClick={() => this._onYellowBackClick()} />
+                <MenuItem primaryText="Green" onClick={() => this._onGreenBackClick()} />
                 <MenuItem primaryText="Black" />
               </IconMenu>
-              <IconButton onClick={() => this.toggleOrderedList}><LeftIcon /></IconButton>
-              <IconButton onClick={() => this.toggleOrderedList}><CenterIcon /></IconButton>
-              <IconButton onClick={() => this.toggleOrderedList}><RightIcon /></IconButton>
+              <IconButton><LeftIcon /></IconButton>
+              <IconButton><CenterIcon /></IconButton>
+              <IconButton><RightIcon /></IconButton>
             </Toolbar>
             <Paper style={style} zDepth={5}>
               <Editor

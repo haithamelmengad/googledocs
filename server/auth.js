@@ -62,17 +62,18 @@ module.exports = (passport) => {
       2. SEARCH FOR THE DOC BY ID
       3. IF FOUND, REPLACE THE CONTENTS AND PUSH CONTENTS TO PREVIOUS VERSIONS
     */
-  router.post('/document/version/:docId', (req, res) => {    
+  router.post('/document/version/:docId', (req, res) => {
     /*
       Find the document in the database and push its current content to the versions array
       EXPECTED REQUEST: { content: {contentObj} }
     */
-    Document.findByIdAndUpdate(req.params.docId, { $push: { versions: req.content} }, (error, doc) => {
+    console.log('this is req.conent ' + req.body.content)
+    Document.findByIdAndUpdate(req.params.docId, { $push: { versions: req.body.content} }, (error, doc) => {
       if (error) {
         console.log(`${error}. The document has not been found`);
       } else {
         console.log('Versioned up the Existing Document!');
-        res.send({ saved: true });
+        res.status(200).send({ saved: true });
       }
     });
   });
@@ -110,7 +111,7 @@ module.exports = (passport) => {
       title: req.body.title,
       owner: req.params.userId,
       // contributors: req.body.contributors, // lets not implement this yet
-      versions: req.body.versions,
+      versions: [req.body.versions],
     });
     document.save((err) => {
       if (err) {
