@@ -36,7 +36,7 @@ const documentSchema = new Schema({
   //   type: mongoose.Schema.Types.ObjectId,
   //   ref: 'User',
   // }],
-  versions: [Object],
+  versions: Object,
 });
 const Document = mongoose.model('Document', documentSchema);
 

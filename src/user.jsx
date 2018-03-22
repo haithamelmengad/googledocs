@@ -57,14 +57,14 @@ export default class User extends React.Component {
       },
       body: JSON.stringify({
         title: this.state.title,
-        versions: [],
+        versions: convertToRaw(EditorState.createEmpty().getCurrentContent()),
       }),
     })
     .then(res => res.json())
     .then((res) => {
       console.log(res)
       if (res.saved === true) { // EXPECTED RESPONSE: { saved: true }
-        history.push('/document');
+        history.push(`/user/${id}`);
       }
     })
     .catch((error) => {

@@ -99,7 +99,7 @@ module.exports = (passport) => {
       title: req.body.title,
       owner: req.params.userId,
       // contributors: req.body.contributors, // lets not implement this yet
-      versions: [],
+      versions: req.body.versions,
     });
     document.save((err) => {
       if (err) {
@@ -136,7 +136,7 @@ module.exports = (passport) => {
        console.log(error);
        res.status(500).send({ error });
      } else {
-       res.send({ document: doc });
+       res.status(200).send(doc);
        console.log("Sent document " + req.params.docId)
      }
    })
