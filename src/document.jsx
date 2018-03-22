@@ -23,6 +23,7 @@ import NavigationClose from 'material-ui/svg-icons/navigation/close';
 import FlatButton from 'material-ui/FlatButton';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import { HashRouter as Router, Route } from 'react-router-dom';
+import Dialog from 'material-ui/Dialog';
 
 
 const style = {
@@ -85,6 +86,7 @@ export default class Document extends React.Component {
 
     // WE ALSO MIGHT WANT THE ID IN THE STATE
     this.state = {
+      open: false,
       id: props.match.params.docId,
       editorState: EditorState.createEmpty(),
       title: "",
@@ -96,6 +98,7 @@ export default class Document extends React.Component {
     .then((res) => {
       res.versions[res.versions.length-1].entityMap = res.versions.entityMap || {}
       this.setState({
+        versions: res.versions.length,
         editorState: EditorState.createWithContent(convertFromRaw(res.versions[res.versions.length-1])),
         title: res.title,
         owner: res.owner,
@@ -114,6 +117,14 @@ export default class Document extends React.Component {
     this.handleKeyCommand = this.handleKeyCommand.bind(this);
 
   }
+
+  handleOpen() {
+   this.setState({open: true});
+  };
+
+  handleClose() {
+   this.setState({open: false});
+  };
 
   _onSaveClick() {
     console.log('editor state is ' + this.state.editorState.getCurrentContent())
@@ -208,22 +219,54 @@ export default class Document extends React.Component {
     this.onChange(RichUtils.toggleBlockType(this.state.editorState, 'ordered-list-item'));
   }
 
-  handleTitleClick(history) {
-    console.log(history)
+  handleLeftClick(history) {
     history.push(`/user/${this.state.owner}`);
   }
 
+
+
   render() {
+    let actions = [
+        <FlatButton
+          label="Cancel"
+          primary={true}
+          onClick={this.handleClose}
+        />,
+        <FlatButton
+          label="Submit"
+          primary={true}
+          keyboardFocused={true}
+          onClick={this.handleClose}
+        />,
+      ];
     return (
       <MuiThemeProvider>
         <Route render={({ history }) => (
           <div>
             <AppBar
-              title={<span style={styles.title}>{this.state.title}</span>}
-              onTitleClick={() => this.handleTitleClick(history)}
-              iconElementLeft={<IconButton><NavigationClose /></IconButton>}
+              title={<span style={styles.title}>{this.state.title}: Version {this.state.versions}</span>}
+              onTitleClick={() => this.handleOpen()}
+              iconElementLeft={<IconButton><NavigationClose /></IconButton> }
               iconElementRight={<FlatButton label="Save" onClick={() => this._onSaveClick(history)} />}
+              onLeftIconButtonClick={() => this.handleLeftClick(history)}
             />
+            <Dialog
+              title="Dialog With Actions"
+              actions={actions}
+              modal={false}
+              open={this.state.open}
+              onRequestClose={() => this.handleClose()}
+            >
+            <form onSubmit={}>
+              <label>
+                Title:
+                <input type="text" name="title" placeholder={this.state.title}/>
+                <input type="text" name="title" placeholder={this.state.title}/>
+              </label>
+              <input type="submit" value="Submit" />
+
+            </form>
+            </Dialog>
             <Toolbar>
               <IconButton onClick={() => this._onBoldClick()}><BoldIcon /></IconButton>
               <IconButton onClick={() => this._onItalicsClick()}><ItalicIcon /></IconButton>
