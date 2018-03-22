@@ -68,7 +68,7 @@ module.exports = (passport) => {
       EXPECTED REQUEST: { content: {contentObj} }
     */
     console.log('this is req.conent ' + req.body.content)
-    Document.findByIdAndUpdate(req.params.docId, { $push: { versions: req.body.content} }, (error, doc) => {
+    Document.findByIdAndUpdate(req.params.docId, { $push: { versions: req.body.content}, $set: {title: req.body.title} }, (error, doc) => {
       if (error) {
         console.log(`${error}. The document has not been found`);
       } else {

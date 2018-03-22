@@ -98,7 +98,8 @@ export default class Document extends React.Component {
     .then((res) => {
       res.versions[res.versions.length-1].entityMap = res.versions.entityMap || {}
       this.setState({
-        versions: res.versions.length,
+        version: res.versions.length,
+        oldVersions: res.versions,
         editorState: EditorState.createWithContent(convertFromRaw(res.versions[res.versions.length-1])),
         title: res.title,
         owner: res.owner,
@@ -136,6 +137,7 @@ export default class Document extends React.Component {
       },
       body: JSON.stringify({
         content: convertToRaw(this.state.editorState.getCurrentContent()),
+        title: this.state.title
       }),
     })
     .then(res => res.json())
@@ -223,20 +225,28 @@ export default class Document extends React.Component {
     history.push(`/user/${this.state.owner}`);
   }
 
+  _handleTitleChange(event) {
+    console.log(event.target.value)
+    this.setState({title: event.target.value})
+  }
 
+  _handleVersionChange(event) {
+    console.log(event.target.value)
+  //  this.setState({editorState: EditorState.createWithContent(convertFromRaw(this.state.versions[event.target.value-1]))})
+  }
 
   render() {
     let actions = [
         <FlatButton
           label="Cancel"
           primary={true}
-          onClick={this.handleClose}
+          onClick={this.handleClose.bind(this)}
         />,
         <FlatButton
           label="Submit"
           primary={true}
           keyboardFocused={true}
-          onClick={this.handleClose}
+          onClick={this.handleClose.bind(this)}
         />,
       ];
     return (
@@ -244,7 +254,7 @@ export default class Document extends React.Component {
         <Route render={({ history }) => (
           <div>
             <AppBar
-              title={<span style={styles.title}>{this.state.title}: Version {this.state.versions}</span>}
+              title={<span style={styles.title}>{this.state.title}: Version {this.state.version}</span>}
               onTitleClick={() => this.handleOpen()}
               iconElementLeft={<IconButton><NavigationClose /></IconButton> }
               iconElementRight={<FlatButton label="Save" onClick={() => this._onSaveClick(history)} />}
@@ -257,14 +267,15 @@ export default class Document extends React.Component {
               open={this.state.open}
               onRequestClose={() => this.handleClose()}
             >
-            <form onSubmit={}>
+            <form>
               <label>
                 Title:
-                <input type="text" name="title" placeholder={this.state.title}/>
-                <input type="text" name="title" placeholder={this.state.title}/>
+                <input type="text" name="title" placeholder={this.state.title} onChange={this._handleTitleChange.bind(this, event)}/> <br/ >
               </label>
-              <input type="submit" value="Submit" />
-
+              <label>
+              Version:
+              <input type="text" name="version" placeholder={this.state.version} onChange={this._handleVersionChange.bind(this, event)}/>
+              </label>
             </form>
             </Dialog>
             <Toolbar>
