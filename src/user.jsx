@@ -48,6 +48,9 @@ export default class User extends React.Component {
 
  handleSubmit(event, history) {
     event.preventDefault();
+    console.log(EditorState.createEmpty().getCurrentContent())
+    console.log(convertToRaw(EditorState.createEmpty().getCurrentContent()))
+    console.log(JSON.stringify(convertToRaw(EditorState.createEmpty().getCurrentContent())))
     let id = this.state.id
     fetch(`http://localhost:3000/user/${id}`, {
       method: 'POST',

@@ -83,6 +83,7 @@ export default class Document extends React.Component {
   constructor(props) {
     super(props);
 
+    console.log(props.match.params.docId)
     // WE ALSO MIGHT WANT THE ID IN THE STATE
     this.state = {
       editorState: EditorState.createEmpty(),
@@ -92,18 +93,16 @@ export default class Document extends React.Component {
 
 
     const id = '5ab2ecde40e9dc0e58a378a1'
-    //props.match.params.docId
-    let content
 
     fetch(`http://localhost:3000/document/${id}`)
     .then(res => res.json())
     .then((res) => {
-      content = res.versions
+      res.versions.entityMap = res.versions.entityMap || {}
       this.setState({
+        editorState: EditorState.createWithContent(convertFromRaw(res.versions)),
         title: res.title,
         owner: res.owner,
       })
-      console.log(this.state)
       })
     .catch((error) => {
       console.log(error);
@@ -119,13 +118,11 @@ export default class Document extends React.Component {
     this.handleKeyCommand = this.handleKeyCommand.bind(this);
 
     const saveContent = (content) => {
-     console.log(content);
+     console.log(content)
     };
   }
 
-  componentDidMount() {
-    console.log(content)
-  }
+
   // boiler plate
   handleKeyCommand(command, editorState) {
     const newState = RichUtils.handleKeyCommand(editorState, command);
