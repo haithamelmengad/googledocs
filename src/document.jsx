@@ -4,6 +4,8 @@ import { HashRouter as Router, Route } from 'react-router-dom';
 
 //draft-js imports
 import { Editor, EditorState, RichUtils, convertToRaw, convertFromRaw } from 'draft-js';
+import createStyles from 'draft-js-custom-styles';
+
 
 //material UI inputs
 import { Card, CardActions, CardHeader, CardMedia, CardTitle, CardText } from 'material-ui/Card';
@@ -93,6 +95,15 @@ const styleTitle = {
   },
 };
 
+const customStyleMap = {
+ MARK: {
+   backgroundColor: 'Yellow',
+   fontStyle: 'italic',
+ },
+};
+
+const { styles, customStyleFn, exporter } = createStyles(['font-size', 'color'], 'PREFIX', customStyleMap);
+
 
 export default class Document extends React.Component {
   /*
@@ -139,6 +150,12 @@ export default class Document extends React.Component {
     this.handleKeyCommand = this.handleKeyCommand.bind(this);
 
   }
+
+  addFontSize(val) {
+    const newEditorState = styles.fontSize.add(this.state.editorState, val);
+
+    return this.onChange(newEditorState);
+  };
 
   // boiler plate
   // needed for editor to function
@@ -212,6 +229,8 @@ export default class Document extends React.Component {
     });
 
   }
+
+
 
   componentDidMount() {
     socket.emit('join-document', { docId: this.props.match.params.docId, userToken: 'SOME-USER-TOKEN' }, (ack) => {
@@ -318,13 +337,14 @@ export default class Document extends React.Component {
                 <MenuItem primaryText="Green" onClick={() => this._onGreenBackClick()} />
                 <MenuItem primaryText="Black" />
               </IconMenu>
-              <IconButton><LeftIcon /></IconButton>
+              <IconButton onClick={this.addFontSize.bind(this,'24px')}><LeftIcon /></IconButton>
               <IconButton><CenterIcon /></IconButton>
               <IconButton><RightIcon /></IconButton>
             </Toolbar>
             <Paper style={stylePaper} zDepth={5}>
               <Editor
-                customStyleMap={styleMapEditor}
+                customStyleFn={customStyleFn}
+                customStyleMap={customStyleMap}
                 editorState={this.state.editorState}
                 handleKeyCommand={this.handleKeyCommand}
                 onChange={this.onChange.bind(this)}
