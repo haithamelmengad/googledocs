@@ -235,7 +235,6 @@ export default class Document extends React.Component {
 
   _handleToggle() {
     this.setState({drawerOpen: !this.state.open});
-    console.log('test')
   }
 
   _handleClose() {
@@ -243,10 +242,11 @@ export default class Document extends React.Component {
   }
 
   changeVersion(version) {
-    console.log(this.state.oldVersions[version-1])
-    // console.log(convertFromRaw(this.state.oldVersions[version-1]))
-    console.log(EditorState.createWithContent(this.state.oldVersions[version-1]))
-    //this.setState({editorState: EditorState.createWithContent(convertFromRaw(this.state.oldVersions[version-1])) })
+    this.state.oldVersions[version].entityMap = this.state.oldVersions[version].entityMap || {}
+    this.setState({
+      editorState: EditorState.createWithContent(convertFromRaw(this.state.oldVersions[version])),
+      version: version+1
+     })
   }
 
 
@@ -263,7 +263,7 @@ export default class Document extends React.Component {
     Version change functionality doesn't work
   */
   _handleChange(event) {
-
+    console.log(event.target.value)
     this.setState({
       title: event.target.value
     });
