@@ -11,6 +11,7 @@ import createStyles from 'draft-js-custom-styles';
 import { Card, CardActions, CardHeader, CardMedia, CardTitle, CardText } from 'material-ui/Card';
 import { Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle } from 'material-ui/Toolbar';
 import RaisedButton from 'material-ui/RaisedButton';
+import Drawer from 'material-ui/Drawer';
 import IconMenu from 'material-ui/IconMenu';
 import MenuItem from 'material-ui/MenuItem';
 import IconButton from 'material-ui/IconButton';
@@ -31,8 +32,14 @@ import NavigationClose from 'material-ui/svg-icons/navigation/close';
 import FlatButton from 'material-ui/FlatButton';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import Dialog from 'material-ui/Dialog';
+import FormatSize from 'material-ui/svg-icons/editor/format-size'
+import PersonAdd from 'material-ui/svg-icons/social/person-add'
+
+
+//Socket import
 import io from 'socket.io-client';
 import {currentUser} from './login.jsx';
+
 
 
 const socket = io('http://localhost:3000')
@@ -105,6 +112,11 @@ const customStyleMap = {
 
 const { styles, customStyleFn, exporter } = createStyles(['font-size', 'color'], 'PREFIX', customStyleMap);
 
+function getBlockStyle(block) {
+  const type = block.getType()
+  if(type.indexOf('text-align-') === 0) return type
+  return null
+}
 
 export default class Document extends React.Component {
   /*
@@ -118,7 +130,8 @@ export default class Document extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      open: false,
+      modal1Open: false,
+      drawerOpen: false,
       id: props.match.params.docId,
       editorState: EditorState.createEmpty(),
       title: "",
@@ -150,12 +163,16 @@ export default class Document extends React.Component {
 
     this.handleKeyCommand = this.handleKeyCommand.bind(this);
 
+
   }
 
-  addFontSize(val) {
-    const newEditorState = styles.fontSize.add(this.state.editorState, val);
-
+  toggleFontSize(fontSize) {
+    const newEditorState = styles.fontSize.toggle(this.state.editorState, fontSize);
     return this.onChange(newEditorState);
+  };
+
+  addAlign(tag) {
+    return this.onChange(RichUtils.toggleBlockType(this.state.editorState, tag))
   };
 
   // boiler plate
@@ -200,13 +217,40 @@ export default class Document extends React.Component {
 
   //opens title modal
   handleOpen() {
-   this.setState({open: true});
+   this.setState({modal1Open: true});
   };
 
   //closes title modal
   handleClose() {
-   this.setState({open: false});
+   this.setState({modal1Open: false});
   };
+
+  handleOpenModal2() {
+   this.setState({modal2Open: true});
+  };
+
+  //closes title modal
+  handleCloseModal2() {
+   this.setState({modal2Open: false});
+  };
+
+  _handleToggle() {
+    this.setState({drawerOpen: !this.state.open});
+  }
+
+  _handleClose() {
+    this.setState({drawerOpen: false});
+  }
+
+  changeVersion(version) {
+    this.state.oldVersions[version].entityMap = this.state.oldVersions[version].entityMap || {}
+    this.setState({
+      editorState: EditorState.createWithContent(convertFromRaw(this.state.oldVersions[version])),
+      version: version+1,
+      drawerOpen: false
+     })
+  }
+
 
   //returns the user to their document overview page
   handleLeftClick(history) {
@@ -221,16 +265,16 @@ export default class Document extends React.Component {
     Version change functionality doesn't work
   */
   _handleChange(event) {
-    const target = event.target;
-    const value = target.type === 'number' ? EditorState.createWithContent(convertFromRaw(this.state.oldVersions[event.target.value-1])) : target.value;
-    const name = target.name;
-
+    console.log(event.target.value)
     this.setState({
-      [name]: value
+      title: event.target.value
     });
 
   }
 
+  _handleChangeModal2(event) {
+    console.log(event.target.value)
+  }
 
 
   componentDidMount() {
@@ -252,7 +296,7 @@ export default class Document extends React.Component {
       const { state, docId, userToken } = update;
       if (currentUser.user._id !== userToken) {
         console.log('setting the state');
-        this.setState({ editorState: EditorState.createWithContent(convertFromRaw(state)) });
+        // this.setState({ editorState: EditorState.createWithContent(convertFromRaw(state)) });
       }
     });
   }
@@ -280,22 +324,42 @@ export default class Document extends React.Component {
           onClick={this.handleClose.bind(this)}
         />,
       ];
+
+    let actions2 = [
+        <FlatButton
+          label="Cancel"
+          primary={true}
+          onClick={this.handleCloseModal2.bind(this)}
+        />,
+        <FlatButton
+          label="Submit"
+          primary={true}
+          keyboardFocused={true}
+          onClick={this.handleCloseModal2.bind(this)}
+        />,
+      ];
     return (
       <MuiThemeProvider>
         <Route render={({ history }) => (
           <div>
             <AppBar
-              title={<span style={styleTitle.title}>{this.state.title}: Version {this.state.version}</span>}
+              title={<span style={styleTitle.title}>{this.state.title}</span>}
               onTitleClick={() => this.handleOpen()}
               iconElementLeft={<IconButton><NavigationClose /></IconButton> }
               iconElementRight={<FlatButton label="Save" onClick={() => this._onSaveClick(history)} />}
               onLeftIconButtonClick={() => this.handleLeftClick(history)}
             />
+            <AppBar
+              title={<span style={styleTitle.title}> Version {this.state.version}</span>}
+              iconElementRight={<IconButton><PersonAdd /></IconButton> }
+              onLeftIconButtonClick={this._handleToggle.bind(this) }
+              onRightIconButtonClick={() => this.handleOpenModal2()}
+            />
             <Dialog
-              title="Dialog With Actions"
+              title="Change Title"
               actions={actions}
               modal={false}
-              open={this.state.open}
+              open={this.state.modal1Open}
               onRequestClose={() => this.handleClose()}
             >
             <form>
@@ -303,12 +367,33 @@ export default class Document extends React.Component {
                 Title:
                 <input type="text" name="title" placeholder={this.state.title} onChange={this._handleChange.bind(this, event)}/> <br/ >
               </label>
+            </form>
+            </Dialog>
+            <Dialog
+              title="Add collaborator"
+              actions={actions2}
+              modal={false}
+              open={this.state.modal2Open}
+              onRequestClose={() => this.handleCloseModal2()}
+            >
+            <form>
               <label>
-              Version:
-              <input type="text" name="editorState" placeholder={this.state.version} onChange={this._handleChange.bind(this, event)}/>
+                Collaborator:
+                <input type="text" name="collaborator" placeholder="Add collaborator" onChange={this._handleChangeModal2.bind(this, event)}/> <br/ >
               </label>
             </form>
             </Dialog>
+            <Drawer
+              docked={false}
+              width={200}
+              open={this.state.drawerOpen}
+              onRequestChange={(open) => this.setState({drawerOpen:open})}
+            >
+            <h1>Versions:</h1>
+            {this.state.oldVersions && this.state.oldVersions.map((item, index) =>
+              <MenuItem onClick={() => this.changeVersion(index)}>version: {index+1}</MenuItem>
+            )}
+            </Drawer>
             <Toolbar>
               <IconButton onClick={() => this._onBoldClick()}><BoldIcon /></IconButton>
               <IconButton onClick={() => this._onItalicsClick()}><ItalicIcon /></IconButton>
@@ -338,13 +423,15 @@ export default class Document extends React.Component {
                 <MenuItem primaryText="Green" onClick={() => this._onGreenBackClick()} />
                 <MenuItem primaryText="Black" />
               </IconMenu>
-              <IconButton onClick={this.addFontSize.bind(this,'24px')}><LeftIcon /></IconButton>
-              <IconButton><CenterIcon /></IconButton>
-              <IconButton><RightIcon /></IconButton>
+              <IconButton onClick={() => this.toggleFontSize('36px')}><FormatSize /></IconButton>
+              <IconButton onClick={() => this.addAlign('text-align-left')}><LeftIcon /></IconButton>
+              <IconButton onClick={() => this.addAlign('text-align-center')} ><CenterIcon /></IconButton>
+              <IconButton onClick={() => this.addAlign('text-align-right')}><RightIcon /></IconButton>
             </Toolbar>
             <Paper style={stylePaper} zDepth={5}>
               <Editor
                 customStyleFn={customStyleFn}
+                blockStyleFn={getBlockStyle}
                 customStyleMap={customStyleMap}
                 editorState={this.state.editorState}
                 handleKeyCommand={this.handleKeyCommand}

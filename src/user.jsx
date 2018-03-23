@@ -109,7 +109,7 @@ export default class User extends React.Component {
     .then(res => res.json())
     .then((res) => {
       if (res.saved === true) { // EXPECTED RESPONSE: { saved: true }
-        history.push(`/user/${id}`);
+      window.location.reload();
       }
     })
     .catch((error) => {
