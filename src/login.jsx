@@ -2,6 +2,11 @@ import React from 'react';
 import { Route } from 'react-router-dom';
 import Style from './styles.js';
 import currentUser from './currentUser';
+import crypto from 'crypto';
+
+function md5(data) {
+  return crypto.createHash('md5').update(data).digest('hex');
+}
 
 class Login extends React.Component {
   constructor(props) {
@@ -25,23 +30,17 @@ class Login extends React.Component {
       });
     };
     this.handleLoginClick = (history) => {
-      console.log('CLICKED LOGIN BUTTON');
-      // console.log(this.state.username);
-      // console.log(this.state.password);
       fetch('http://localhost:3000/login', {
         method: 'POST',
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(this.state),
+        body: JSON.stringify({ username: this.state.username, password: md5(this.state.password) }),
       })
       .then(res => res.json())
       .then((res) => {
         if (res.loggedIn === true) {
-          console.log('logged in success!!');
-          console.log("Check user:", res.user)
-          console.log("USER ID:", res.user._id)
           currentUser.user = res.user;
           history.push(`/user/${res.user._id}`);
         } else {
@@ -117,4 +116,5 @@ class Login extends React.Component {
 }
 
 
-export default Login;
+exports.Login = Login;
+exports.currentUser = currentUser;

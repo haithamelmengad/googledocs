@@ -3,10 +3,14 @@ import React from 'react';
 // import { Redirect } from 'react-router';
 import { Route } from 'react-router-dom';
 import Style from './styles.js';
+import crypto from 'crypto';
 // import Models from '../server/models/models.js';
 
 // import Login from './login';
 
+function md5(data) {
+  return crypto.createHash('md5').update(data).digest('hex');
+}
 
 class Register extends React.Component {
   constructor(props) {
@@ -28,11 +32,10 @@ class Register extends React.Component {
             Accept: 'application/json',
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(this.state),
+          body: JSON.stringify({ username: this.state.username, password: md5(this.state.password), confirmPassword: md5(this.state.confirmPassword) }),
         })
       .then(res => res.json())
       .then((res) => {
-        console.log('RESPONSE:', res);
         if (res.registered === true) {
           history.push('/login');
         } else {

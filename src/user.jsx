@@ -28,7 +28,7 @@ export default class User extends React.Component {
       id: this.props.match.params.userId,
       title: '',
       ownedDocuments: [],
-      contributedDocuments: [],
+      contributedDocuments: []
     }
     console.log(this.state.id);
     console.log(this.props.match.params.userId);
@@ -154,7 +154,7 @@ export default class User extends React.Component {
       </form>
       <h3> Your Documents </h3>
       {(this.state.ownedDocuments).map((item) =>
-        <Card>
+        <Card key={item._id}>
           <CardHeader
             title= {item.title}
             subtitle={item.owner}
@@ -167,7 +167,7 @@ export default class User extends React.Component {
        )}
        <h3> Shared With You </h3>
        {(this.state.contributedDocuments).map((item) =>
-        <Card>
+        <Card key={item._id}>
           <CardHeader
             title= {item.title}
             subtitle={item.owner}

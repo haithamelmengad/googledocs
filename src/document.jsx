@@ -32,7 +32,7 @@ import FlatButton from 'material-ui/FlatButton';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import Dialog from 'material-ui/Dialog';
 import io from 'socket.io-client';
-import currentUser from './currentUser';
+import {currentUser} from './login.jsx';
 
 
 const socket = io('http://localhost:3000')
@@ -234,6 +234,7 @@ export default class Document extends React.Component {
 
 
   componentDidMount() {
+    console.log(currentUser);
     socket.emit('join-document', { docId: this.props.match.params.docId, userToken: currentUser.user._id }, (ack) => {
       console.log('joined the document');
       if (!ack) console.error('Error joining document!');
