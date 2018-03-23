@@ -145,7 +145,7 @@ router.get('/user/:userId', (req, res) => {
   Add contributors to the document
   EXPECTED REQUEST: { contributor: userId }
  */
-  router.post('/addContributor/:docId/:contributorId', (req, res) => {
+  router.post('/addContributor/:docId', (req, res) => {
   Document.findByIdAndUpdate(req.params.docId, { $push: { contributors: req.body.contributor }}, (error, doc) => {
     if(error){
       console.log(error);
