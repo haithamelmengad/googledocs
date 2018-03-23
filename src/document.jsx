@@ -24,7 +24,12 @@ import FlatButton from 'material-ui/FlatButton';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import { HashRouter as Router, Route } from 'react-router-dom';
 import Dialog from 'material-ui/Dialog';
+import io from 'socket.io-client';
 
+
+const socket = io('http://localhost:3000')
+socket.on('connect', function(){console.log('ws connect')})
+socket.on('disconnect', function(){console.log('ws disconnect')})
 
 const style = {
   height: 600,
@@ -112,6 +117,7 @@ export default class Document extends React.Component {
 
     this.onChange = (editorState) => {
       const contentState = editorState.getCurrentContent();
+      socket.emit('document-save', { secretToken: this.secretToken, state: convertToRaw(contentState), docId: this.props.match.params.docId, userToken: this.state.owner} )
       return this.setState({ editorState });
     };
 
@@ -235,6 +241,30 @@ export default class Document extends React.Component {
   //  this.setState({editorState: EditorState.createWithContent(convertFromRaw(this.state.versions[event.target.value-1]))})
   }
 
+  componentDidMount() {
+    socket.emit('join-document', { docId: this.props.match.params.docId, userToken: 'SOME-USER-TOKEN' }, (ack) => {
+      console.log('joined the document');
+      if (!ack) console.error('Error joining document!');
+      this.secretToken = ack.secretToken;
+      this.docId = ack.docId;
+      if (ack.state) {
+        console.log(ack.state);
+        this.setState({
+          editorState: EditorState.createWithContent(convertFromRaw(ack.state)),
+        });
+
+      }
+    });
+    socket.on('document-update', (update) => {
+      console.log('document updated');
+      const { state, docId, userToken } = update;
+      if (this.state.author !== userToken) {
+        console.log('setting the state');
+        this.setState({ editorState: EditorState.createWithContent(convertFromRaw(state)) });
+      }
+    });
+  }
+
   render() {
     let actions = [
         <FlatButton
@@ -316,7 +346,7 @@ export default class Document extends React.Component {
                 customStyleMap={styleMap}
                 editorState={this.state.editorState}
                 handleKeyCommand={this.handleKeyCommand}
-                onChange={this.onChange}
+                onChange={this.onChange.bind(this)}
               />
             </Paper>
           </div>
