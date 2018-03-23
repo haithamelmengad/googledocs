@@ -59,6 +59,7 @@
     "cookie-parser": "^1.4.3",
     "crypto": "^1.0.1",
     "draft-js": "^0.10.5",
+    "draft-js-custom-styles": "^2.0.4",
     "electron-compile": "^6.4.2",
     "electron-devtools-installer": "^2.2.3",
     "electron-squirrel-startup": "^1.0.0",
