@@ -9,13 +9,13 @@ const Content = models.Content;
 // var validator = require('express-validator');
 
 module.exports = (passport) => {
-    /*
-      Post request to /register:
-      Verifies the form completion and adds a user to the database
-      if the passwords are the same.
-      Sends {registered: true} response if the
-      user is successfully registered.
-    */
+  /*
+    Post request to /register:
+    Verifies the form completion and adds a user to the database
+    if the passwords are the same.
+    Sends {registered: true} response if the
+    user is successfully registered.
+  */
   router.post('/register', (req, res) => {
     console.log('Body', req.body);
     if (req.body.username.length > 0 && req.body.password.length > 0 &&
@@ -50,23 +50,10 @@ module.exports = (passport) => {
 
 
   /*
-    EXPECTED REQUEST:
-    { content: {contentObj},
-      title: 'myTitle',
-      owner: userRef,
-      contributors: [userRef]
-    }
+    Find the document in the database and push its current content to the versions array
+    EXPECTED REQUEST: { content: {contentObj} }
   */
-  /*
-      1. CREATE A CONTENT OBJECT
-      2. SEARCH FOR THE DOC BY ID
-      3. IF FOUND, REPLACE THE CONTENTS AND PUSH CONTENTS TO PREVIOUS VERSIONS
-    */
   router.post('/document/version/:docId', (req, res) => {
-    /*
-      Find the document in the database and push its current content to the versions array
-      EXPECTED REQUEST: { content: {contentObj} }
-    */
     console.log('this is req.conent ' + req.body.content)
     Document.findByIdAndUpdate(req.params.docId, { $push: { versions: req.body.content}, $set: {title: req.body.title} }, (error, doc) => {
       if (error) {
@@ -93,15 +80,6 @@ module.exports = (passport) => {
       }
     })
   })
-
-
-
-
-
-
-
-
-
 
   /*
     Create a new document for the user
@@ -148,15 +126,9 @@ router.get('/user/:userId', (req, res) => {
   Document.find({contributors: req.params.userId})
 })
 
-
-
-
-
-
-
-  /*
-    Get information about a specific document
-  */
+/*
+  Get information about a specific document
+*/
  router.get('/document/:docId', (req, res) => {
    Document.findById(req.params.docId, (error, doc) => {
      if(error){
@@ -168,6 +140,26 @@ router.get('/user/:userId', (req, res) => {
      }
    })
  })
+
+ /*
+  Add contributors to the document
+  EXPECTED REQUEST: { contributor: userId }
+ */
+  router.post('/addContributor/:docId/:contributorId', (req, res) => {
+  Document.findByIdAndUpdate(req.params.docId, { $push: { contributors: req.body.contributor }}, (error, doc) => {
+    if(error){
+      console.log(error);
+      res.status(500).send({ error });
+    } else {
+      res.status(200).send({contributorAdded: req.body.contributor});
+      console.log('Added contributor', contributorId, 'to document ', docId)
+    }
+  })
+  })
+
+  
+
+
 
 
 
