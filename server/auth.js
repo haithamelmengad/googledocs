@@ -170,10 +170,23 @@ router.get('/user/:userId', (req, res) => {
         res.status(200).send({ contributors: doc.contributors });
         console.log('Listed contributors');
       }
+    });
+  });
+
+  /*
+    Find all the documents that a specific user contributes to
+  */
+  router.get('/contributor-docs/:userId', (req, res) => {
+    Document.find({contributors : {$contains: req.params.userId}}, (error, docs) => {
+      if(error){
+        console.log(error);
+        res.status(500).send({ error });
+      }else {
+        res.status(200).send({ contributedDocs: docs });
+        console.log('Listed the docs that the user contributes to');
+      }
     })
   })
-
-  
 
 
 
