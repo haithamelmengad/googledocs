@@ -146,15 +146,31 @@ router.get('/user/:userId', (req, res) => {
   EXPECTED REQUEST: { contributor: userId }
  */
   router.post('/addContributor/:docId', (req, res) => {
-  Document.findByIdAndUpdate(req.params.docId, { $push: { contributors: req.body.contributor }}, (error, doc) => {
-    if(error){
-      console.log(error);
-      res.status(500).send({ error });
-    } else {
-      res.status(200).send({contributorAdded: req.body.contributor});
-      console.log('Added contributor', contributorId, 'to document ', docId)
-    }
+    Document.findByIdAndUpdate(req.params.docId, { $push: { contributors: req.body.contributor }}, (error, doc) => {
+      if(error){
+        console.log(error);
+        res.status(500).send({ error });
+      } else {
+        res.status(200).send({contributorAdded: req.body.contributor});
+        console.log('Added contributor', req.body.contributor, 'to document ', docId)
+      }
+    })
   })
+
+  /*
+    List contributors for a current document
+    sends response: { contributors: [userId] }
+  */
+  router.get('/contributors/:docId', (req, res) => {
+    Document.findById(req.params.docId, (error, doc) => {
+      if(error){
+        console.log(error);
+        res.status(500).send({ error });
+      } else {
+        res.status(200).send({ contributors: doc.contributors });
+        console.log('Listed contributors');
+      }
+    })
   })
 
   
