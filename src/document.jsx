@@ -250,7 +250,7 @@ export default class Document extends React.Component {
     socket.on('document-update', (update) => {
       console.log('document updated');
       const { state, docId, userToken } = update;
-      if (currentUser.user.userId !== userToken) {
+      if (currentUser.user._id !== userToken) {
         console.log('setting the state');
         this.setState({ editorState: EditorState.createWithContent(convertFromRaw(state)) });
       }

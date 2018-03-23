@@ -41,8 +41,9 @@ class Login extends React.Component {
         if (res.loggedIn === true) {
           console.log('logged in success!!');
           console.log("Check user:", res.user)
+          console.log("USER ID:", res.user._id)
           currentUser.user = res.user;
-          history.push(`/user/${res.user.userId}`);
+          history.push(`/user/${res.user._id}`);
         } else {
           currentUser.user = null;
           alert('failed to login successfully');

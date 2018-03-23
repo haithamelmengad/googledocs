@@ -25,11 +25,14 @@ export default class User extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      id: props.match.params.userId,
+      id: this.props.match.params.userId,
       title: '',
       documents: [],
     }
+    console.log(this.state.id);
+    console.log(this.props.match.params.userId);
     this.aquireDocuments()
+
   };
 
 
