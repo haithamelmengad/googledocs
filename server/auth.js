@@ -45,7 +45,7 @@ module.exports = (passport) => {
   */
   router.post('/login', passport.authenticate('local'), (req, res) => {
     console.log('Check req.user (make sure it has _id): ', req.user);
-    res.send({ userId: req.user._id, loggedIn: true }); // CHECK
+    res.send({ user:req.user, loggedIn: true });
   });
 
 

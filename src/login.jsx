@@ -1,6 +1,7 @@
 import React from 'react';
 import { Route } from 'react-router-dom';
 import Style from './styles.js';
+import currentUser from './currentUser';
 
 class Login extends React.Component {
   constructor(props) {
@@ -39,10 +40,11 @@ class Login extends React.Component {
       .then((res) => {
         if (res.loggedIn === true) {
           console.log('logged in success!!');
-          console.log("Check user Id:", res.userId)
-          history.push(`/user/${res.userId}`); //CHECK
-
+          console.log("Check user:", res.user)
+          currentUser.user = res.user;
+          history.push(`/user/${res.user.userId}`);
         } else {
+          currentUser.user = null;
           alert('failed to login successfully');
         }
       })

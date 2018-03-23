@@ -30,6 +30,7 @@ import FlatButton from 'material-ui/FlatButton';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import Dialog from 'material-ui/Dialog';
 import io from 'socket.io-client';
+import currentUser from './currentUser';
 
 
 const socket = io('http://localhost:3000')
@@ -214,7 +215,7 @@ export default class Document extends React.Component {
   }
 
   componentDidMount() {
-    socket.emit('join-document', { docId: this.props.match.params.docId, userToken: 'SOME-USER-TOKEN' }, (ack) => {
+    socket.emit('join-document', { docId: this.props.match.params.docId, userToken: currentUser.user.userId }, (ack) => {
       console.log('joined the document');
       if (!ack) console.error('Error joining document!');
       this.secretToken = ack.secretToken;
@@ -230,7 +231,7 @@ export default class Document extends React.Component {
     socket.on('document-update', (update) => {
       console.log('document updated');
       const { state, docId, userToken } = update;
-      if (this.state.author !== userToken) {
+      if (currentUser.user.userId !== userToken) {
         console.log('setting the state');
         this.setState({ editorState: EditorState.createWithContent(convertFromRaw(state)) });
       }
