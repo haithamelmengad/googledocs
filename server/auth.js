@@ -177,7 +177,7 @@ router.get('/user/:userId', (req, res) => {
     Find all the documents that a specific user contributes to
   */
   router.get('/contributor-docs/:userId', (req, res) => {
-    Document.find({contributors : {$contains: req.params.userId}}, (error, docs) => {
+    Document.find({contributors : req.params.userId}, (error, docs) => {
       if(error){
         console.log(error);
         res.status(500).send({ error });

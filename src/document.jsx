@@ -108,10 +108,10 @@ const { styles, customStyleFn, exporter } = createStyles(['font-size', 'color'],
 
 export default class Document extends React.Component {
   /*
-      constructor()
-      sets an initial state for the document
-      peforms a get request to the server
-      expected response is the unique document data
+    constructor()
+    sets an initial state for the document
+    peforms a get request to the server
+    expected response is the unique document data
 
   */
 
@@ -234,7 +234,7 @@ export default class Document extends React.Component {
 
 
   componentDidMount() {
-    socket.emit('join-document', { docId: this.props.match.params.docId, userToken: currentUser.user.userId }, (ack) => {
+    socket.emit('join-document', { docId: this.props.match.params.docId, userToken: currentUser.user._id }, (ack) => {
       console.log('joined the document');
       if (!ack) console.error('Error joining document!');
       this.secretToken = ack.secretToken;
@@ -244,7 +244,6 @@ export default class Document extends React.Component {
         this.setState({
           editorState: EditorState.createWithContent(convertFromRaw(ack.state)),
         });
-
       }
     });
     socket.on('document-update', (update) => {

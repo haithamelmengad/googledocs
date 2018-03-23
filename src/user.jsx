@@ -27,34 +27,49 @@ export default class User extends React.Component {
     this.state = {
       id: this.props.match.params.userId,
       title: '',
-      documents: [],
+      ownedDocuments: [],
+      contributedDocuments: [],
     }
     console.log(this.state.id);
     console.log(this.props.match.params.userId);
-    this.aquireDocuments()
-
+    this.aquireOwnedDocuments();
+    this.aquireContributedDocuments();
+    console.log('CONTRIBUTED DOCUMENTS:', this.state.contributedDocuments);
   };
 
 
   /*
-    aquireDocuments()
+    aquireOwnedDocuments()
     called once inside constructor
     peforms get request
     expected response: { ownedDocs: [...]}
     the array contains all relevant data
   */
 
-  aquireDocuments() {
+  aquireOwnedDocuments() {
     let id = this.state.id
     fetch(`http://localhost:3000/user/${id}`)
     .then(res => res.json())
     .then((res) => {
-      this.setState({documents: res.ownedDocs})
+      this.setState({ownedDocuments: res.ownedDocs})
     })
     .catch((error) => {
       console.log(error);
       alert(error);
     });
+  }
+
+  aquireContributedDocuments() {
+    let id = this.state.id
+    fetch(`http://localhost:3000/contributor-docs/${id}`)
+    .then(res => res.json())
+    .then((res) => {
+      this.setState({ contributedDocuments: res.contributedDocs})
+    })
+    .catch(error => {
+      console.log(error);
+      alert(error);
+    })
   }
 
 
@@ -130,7 +145,6 @@ export default class User extends React.Component {
       title="Username"
       iconClassNameRight="muidocs-icon-navigation-expand-more"
       />
-      <h1> Your Documents </h1>
       <form onSubmit={(event) => this.handleSubmit(event, history)}>
         <label>
           Name:
@@ -138,7 +152,21 @@ export default class User extends React.Component {
         </label>
         <input type="submit" value="Create New"  />
       </form>
-      {(this.state.documents).map((item) =>
+      <h3> Your Documents </h3>
+      {(this.state.ownedDocuments).map((item) =>
+        <Card>
+          <CardHeader
+            title= {item.title}
+            subtitle={item.owner}
+          />
+          <CardActions>
+            <FlatButton label="Open" onClick={() => this.handleOpen(history, item._id)}/>
+            <FlatButton label="Delete" />
+          </CardActions>
+        </Card>
+       )}
+       <h3> Shared With You </h3>
+       {(this.state.contributedDocuments).map((item) =>
         <Card>
           <CardHeader
             title= {item.title}
