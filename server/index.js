@@ -1,3 +1,7 @@
+
+import socket from 'socket.io';
+import React from 'react';
+import crypto from 'crypto';
 import passport from 'passport';
 import express from 'express';
 import session from 'express-session';
@@ -7,16 +11,54 @@ import path from 'path';
 import logger from 'morgan';
 import cookieParser from 'cookie-parser';
 import auth from './auth.js';
+import Models from './models/models.js';
+
+
+const app = express();
+const server = require('http').Server(app);
+const io = require('socket.io')(server);
+
 // import React from 'react';
 
 // import { Route } from 'react-router-dom';
 // import Style from '../src/styles.js';
-import Models from './models/models.js';
 
-const app = express();
+
 const connect = process.env.MONGODB_URI;
 Mongoose.connect(connect);
 const User = Models.User;
+
+
+const SALT = 'rotten tomatoes are gross';
+const sharedDocuments = {};
+const currentState = {};
+
+function md5(data) {
+  return crypto.createHash('md5').update(data).digest('hex');
+}
+
+io.on('connection', (socket) => {
+  console.log('CONNECTED');
+  socket.on('join-document', (docAuth, cb) => {
+    const { docId, userToken } = docAuth;
+    console.log('headers', socket.handshake.headers);
+
+    let secretToken = sharedDocuments[docId];
+    if (!secretToken) {
+      secretToken = sharedDocuments[docId] = md5(docId + Math.random() + SALT);
+    }
+    cb({ secretToken, docId, state: currentState[docId] });
+    socket.join(secretToken);
+  });
+  socket.on('document-save', function (message) {
+    console.log('saved the doc');
+    const {secretToken, state, docId, userToken} = message;
+    currentState[docId] = state
+    io.sockets.in(secretToken).emit('document-update', {state, docId, userToken})
+  });
+});
+
+// TO GET THE CURSOR, editorState.getCursor (or something like that)
 
 
 app.use(logger('dev'));
@@ -63,4 +105,4 @@ app.use(passport.session());
 app.use('/', auth(passport));
 
 
-app.listen(process.env.PORT || 3000, () => console.log('Listening successfully'));
+server.listen(process.env.PORT || 3000, () => console.log('Listening successfully'));
