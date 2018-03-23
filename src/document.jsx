@@ -245,7 +245,8 @@ export default class Document extends React.Component {
     this.state.oldVersions[version].entityMap = this.state.oldVersions[version].entityMap || {}
     this.setState({
       editorState: EditorState.createWithContent(convertFromRaw(this.state.oldVersions[version])),
-      version: version+1
+      version: version+1,
+      drawerOpen: false
      })
   }
 
