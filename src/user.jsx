@@ -126,6 +126,22 @@ export default class User extends React.Component {
     history.push(`/document/${docId}`)
   }
 
+  /*
+    handleDelete(docId)
+    deletes a given document from the database when user
+    clicks the delete button
+  */
+  handleDelete(docId) {
+    fetch(`http://localhost:3000/deletedoc/${docId}`)
+    .then(res => res.json())
+    .then((res) => {
+      //get the page to rerender because we dont see the document deleted unless we refresh the page
+    })
+    .catch(error => {
+      console.log(error);
+      alert(error);
+    })
+  }
 
   /*
     render notes:
@@ -161,7 +177,7 @@ export default class User extends React.Component {
           />
           <CardActions>
             <FlatButton label="Open" onClick={() => this.handleOpen(history, item._id)}/>
-            <FlatButton label="Delete" />
+            <FlatButton label="Delete" onClick={() => this.handleDelete(item._id)} />
           </CardActions>
         </Card>
        )}
