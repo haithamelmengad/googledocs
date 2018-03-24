@@ -131,11 +131,14 @@ export default class Document extends React.Component {
     super(props);
     this.state = {
       modal1Open: false,
+      modal2Open: false,
       drawerOpen: false,
       id: props.match.params.docId,
       editorState: EditorState.createEmpty(),
       title: "",
       owner: "",
+      contributors:[],
+      currentUser: currentUser
     };
 
     fetch(`http://localhost:3000/document/${this.state.id}`)
@@ -234,6 +237,17 @@ export default class Document extends React.Component {
    this.setState({modal2Open: false});
   };
 
+
+  handleSubmitModal2() {
+    let joined = this.state.contributors;
+    joined.push(this.state.tempContributor);
+    this.setState({
+      modal2Open: false,
+      contributors: joined
+    });
+    console.log(this.state.contributors)
+   };
+
   _handleToggle() {
     this.setState({drawerOpen: !this.state.open});
   }
@@ -264,28 +278,30 @@ export default class Document extends React.Component {
     title changes only persist after saving
     Version change functionality doesn't work
   */
+
+ _handleChangeModal2(event) {
+   console.log(event.target.value)
+  this.setState({
+    tempContributor: event.target.value
+  });
+}
+
   _handleChange(event) {
-    console.log(event.target.value)
     this.setState({
       title: event.target.value
     });
 
   }
 
-  _handleChangeModal2(event) {
-    console.log(event.target.value)
-  }
-
 
   componentDidMount() {
-    console.log(currentUser);
-    socket.emit('join-document', { docId: this.props.match.params.docId, userToken: currentUser.user._id }, (ack) => {
+    console.log(this.state);
+    socket.emit('join-document', { docId: this.props.match.params.docId, userToken: this.state.currentUser.user._id }, (ack) => {
       console.log('joined the document');
       if (!ack) console.error('Error joining document!');
       this.secretToken = ack.secretToken;
       this.docId = ack.docId;
       if (ack.state) {
-        console.log(ack.state);
         this.setState({
           editorState: EditorState.createWithContent(convertFromRaw(ack.state)),
         });
@@ -335,7 +351,7 @@ export default class Document extends React.Component {
           label="Submit"
           primary={true}
           keyboardFocused={true}
-          onClick={this.handleCloseModal2.bind(this)}
+          onClick={this.handleSubmitModal2.bind(this)}
         />,
       ];
     return (
@@ -351,24 +367,10 @@ export default class Document extends React.Component {
             />
             <AppBar
               title={<span style={styleTitle.title}> Version {this.state.version}</span>}
-              iconElementRight={<IconButton><PersonAdd /></IconButton> }
+              iconElementRight={<IconButton value={this.state.contributors}><PersonAdd /></IconButton> }
               onLeftIconButtonClick={this._handleToggle.bind(this) }
               onRightIconButtonClick={() => this.handleOpenModal2()}
             />
-            <Dialog
-              title="Change Title"
-              actions={actions}
-              modal={false}
-              open={this.state.modal1Open}
-              onRequestClose={() => this.handleClose()}
-            >
-            <form>
-              <label>
-                Title:
-                <input type="text" name="title" placeholder={this.state.title} onChange={this._handleChange.bind(this, event)}/> <br/ >
-              </label>
-            </form>
-            </Dialog>
             <Dialog
               title="Add collaborator"
               actions={actions2}
@@ -379,7 +381,21 @@ export default class Document extends React.Component {
             <form>
               <label>
                 Collaborator:
-                <input type="text" name="collaborator" placeholder="Add collaborator" onChange={this._handleChangeModal2.bind(this, event)}/> <br/ >
+                <input type="text" name="collaborator" placeholder="Add collaborator" onChange={this._handleChangeModal2.bind(this)}/> <br/ >
+              </label>
+            </form>
+            </Dialog>
+            <Dialog
+              title="Change Title"
+              actions={actions}
+              modal={false}
+              open={this.state.modal1Open}
+              onRequestClose={() => this.handleClose()}
+            >
+            <form>
+              <label>
+                Title:
+                <input type="text" name="title" placeholder={this.state.title} onChange={this._handleChange.bind(this)}/> <br/ >
               </label>
             </form>
             </Dialog>
@@ -391,7 +407,7 @@ export default class Document extends React.Component {
             >
             <h1>Versions:</h1>
             {this.state.oldVersions && this.state.oldVersions.map((item, index) =>
-              <MenuItem onClick={() => this.changeVersion(index)}>version: {index+1}</MenuItem>
+              <MenuItem key={index} onClick={() => this.changeVersion(index)}>version: {index+1}</MenuItem>
             )}
             </Drawer>
             <Toolbar>

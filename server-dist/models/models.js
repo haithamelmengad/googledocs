@@ -34,10 +34,10 @@ var documentSchema = new Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
-  // contributors: [{
-  //   type: mongoose.Schema.Types.ObjectId,
-  //   ref: 'User',
-  // }],
+  contributors: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
   versions: { type: Array, "default": [] }
 });
 var Document = mongoose.model('Document', documentSchema);

@@ -64,11 +64,11 @@ var io = require('socket.io')(server);
 // import Style from '../src/styles.js';
 
 
-const connect = process.env.MONGODB_URI;
+var connect = process.env.MONGODB_URI;
 _mongoose2.default.connect(connect);
 var User = _models2.default.User;
 
-const secret = process.env.SALT;
+var SALT = 'rotten tomatoes are gross';
 var sharedDocuments = {};
 var currentState = {};
 
@@ -86,7 +86,7 @@ io.on('connection', function (socket) {
 
     var secretToken = sharedDocuments[docId];
     if (!secretToken) {
-      secretToken = sharedDocuments[docId] = md5(docId + Math.random() + secret);
+      secretToken = sharedDocuments[docId] = md5(docId + Math.random() + SALT);
     }
     cb({ secretToken: secretToken, docId: docId, state: currentState[docId] });
     socket.join(secretToken);

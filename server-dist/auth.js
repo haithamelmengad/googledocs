@@ -53,27 +53,14 @@ module.exports = function (passport) {
   */
   router.post('/login', passport.authenticate('local'), function (req, res) {
     console.log('Check req.user (make sure it has _id): ', req.user);
-    res.send({ user: req.user, loggedIn: true }); // CHECK
+    res.send({ user: req.user, loggedIn: true });
   });
 
   /*
-    EXPECTED REQUEST:
-    { content: {contentObj},
-      title: 'myTitle',
-      owner: userRef,
-      contributors: [userRef]
-    }
+    Find the document in the database and push its current content to the versions array
+    EXPECTED REQUEST: { content: {contentObj} }
   */
-  /*
-      1. CREATE A CONTENT OBJECT
-      2. SEARCH FOR THE DOC BY ID
-      3. IF FOUND, REPLACE THE CONTENTS AND PUSH CONTENTS TO PREVIOUS VERSIONS
-    */
   router.post('/document/version/:docId', function (req, res) {
-    /*
-      Find the document in the database and push its current content to the versions array
-      EXPECTED REQUEST: { content: {contentObj} }
-    */
     console.log('this is req.conent ' + req.body.content);
     Document.findByIdAndUpdate(req.params.docId, { $push: { versions: req.body.content }, $set: { title: req.body.title } }, function (error, doc) {
       if (error) {
@@ -132,6 +119,7 @@ module.exports = function (passport) {
         res.status(500).send({ error: error });
       } else {
         res.status(200).send({ ownedDocs: ownedDocs });
+        console.log("Sent all documents associated with user " + req.params.userId);
       }
     });
   });
@@ -156,6 +144,53 @@ module.exports = function (passport) {
       } else {
         res.status(200).send(doc);
         console.log("Sent document " + req.params.docId);
+      }
+    });
+  });
+
+  /*
+   Add contributors to the document
+   EXPECTED REQUEST: { contributor: userId }
+  */
+  router.post('/addContributor/:docId', function (req, res) {
+    Document.findByIdAndUpdate(req.params.docId, { $push: { contributors: req.body.contributor } }, function (error, doc) {
+      if (error) {
+        console.log(error);
+        res.status(500).send({ error: error });
+      } else {
+        res.status(200).send({ contributorAdded: req.body.contributor });
+        console.log('Added contributor', req.body.contributor, 'to document ', docId);
+      }
+    });
+  });
+
+  /*
+    List contributors for a current document
+    sends response: { contributors: [userId] }
+  */
+  router.get('/contributors/:docId', function (req, res) {
+    Document.findById(req.params.docId, function (error, doc) {
+      if (error) {
+        console.log(error);
+        res.status(500).send({ error: error });
+      } else {
+        res.status(200).send({ contributors: doc.contributors });
+        console.log('Listed contributors');
+      }
+    });
+  });
+
+  /*
+    Find all the documents that a specific user contributes to
+  */
+  router.get('/contributor-docs/:userId', function (req, res) {
+    Document.find({ contributors: req.params.userId }, function (error, docs) {
+      if (error) {
+        console.log(error);
+        res.status(500).send({ error: error });
+      } else {
+        res.status(200).send({ contributedDocs: docs });
+        console.log('Listed the docs that the user contributes to');
       }
     });
   });
