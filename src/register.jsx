@@ -1,13 +1,9 @@
 import React from 'react';
-// const fetchUrl = require('fetch').fetchUrl;
-// import { Redirect } from 'react-router';
+import crypto from 'crypto';
 import { Route } from 'react-router-dom';
 import Style from './styles.js';
-import crypto from 'crypto';
-// import Models from '../server/models/models.js';
 
-// import Login from './login';
-
+// Hash funciton to make passwords secure
 function md5(data) {
   return crypto.createHash('md5').update(data).digest('hex');
 }
@@ -17,10 +13,9 @@ class Register extends React.Component {
     super(props);
     this.state = {
       username: 'No username specified',
-      password: 'No password specified',            // MAKE PASSWORD SECURE
+      password: 'No password specified',
       confirmPassword: 'No password confirmation',
     };
-    // I should probably put this outside the constructor- what are you talking about m8
     this.handleRegisterClick = (history) => {
       // check if the user was successfully registered
       if (!(this.state.password === this.state.confirmPassword)) {
@@ -39,7 +34,7 @@ class Register extends React.Component {
         if (res.registered === true) {
           history.push('/login');
         } else {
-          alert('failed to register successfully');
+          alert(res.error); 
         }
       });
       }

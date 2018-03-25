@@ -16,26 +16,35 @@ module.exports = (passport) => {
     user is successfully registered.
   */
   router.post('/register', (req, res) => {
-    console.log('Body', req.body);
-    if (req.body.username.length > 0 && req.body.password.length > 0 &&
-        req.body.password === req.body.confirmPassword) {
-      const user = new User({
-        username: req.body.username,
-        password: req.body.password,
-      });
-      user.save((error) => {
-        if (error) {
-          console.log(error);
-          res.status(500).send({ error });
+    console.log('IM IN HERE');
+    // Find if the username already exists in the database
+    User.findOne({ username: req.body.username })
+    .then((user) => {
+      // if the user already exists, send an error message
+      if (user) {
+        res.send({ error: 'Username already exists. Please enter a unique username' }); // LETS MAKE THIS A MODAL OR A RED MESSAGE BAR AT THE TOP OF THE SCREEN
+      } else {
+      // ensure that all fields are filled out
+        if (req.body.username.length > 0 && req.body.password.length > 0 &&
+          req.body.password === req.body.confirmPassword) {
+          const user = new User({
+            username: req.body.username,
+            password: req.body.password,
+          });
+          user.save((error) => {
+            if (error) {
+              res.status(500).send({ error });
+            } else {
+              res.send({ registered: true });
+            }
+          });
         } else {
-          res.send({ registered: true });
-          console.log('Saved!');
+          res.status(400).send({ error: 'Please complete all fields' });
         }
-      });
-    } else {
-      res.status(400).send({ error: 'Please complete all fields' });
-    }
+      }
+    });
   });
+
 
   /*
     Uses passport to verify that the password and username match
@@ -43,7 +52,6 @@ module.exports = (passport) => {
     Sends a {loggedIn: true} response if login is successful
   */
   router.post('/login', passport.authenticate('local'), (req, res) => {
-    console.log('Check req.user (make sure it has _id): ', req.user);
     res.send({ user: req.user, loggedIn: true });
   });
 
@@ -53,12 +61,10 @@ module.exports = (passport) => {
     EXPECTED REQUEST: { content: {contentObj} }
   */
   router.post('/document/version/:docId', (req, res) => {
-    console.log(`this is req.conent ${req.body.content}`);
     Document.findByIdAndUpdate(req.params.docId, { $push: { versions: req.body.content }, $set: { title: req.body.title } }, (error, doc) => {
       if (error) {
         console.log(`${error}. The document has not been found`);
       } else {
-        console.log('Versioned up the Existing Document!');
         res.status(200).send({ saved: true });
       }
     });
@@ -73,9 +79,9 @@ module.exports = (passport) => {
     Document.findByIdAndUpdate(req.params.docId, { $set: { currentContent: req.content } }, (error, doc) => {
       if (error) {
         console.log(error, 'the document has not been found');
+        res.status(500).send({ error });
       } else {
-        console.log('Updated the current document in the database!');
-        res.send({ updated: true });
+        res.status(200).send({ updated: true });
       }
     });
   });
@@ -96,7 +102,6 @@ module.exports = (passport) => {
         console.log(err);
       } else {
         res.status(200).send({ saved: true });
-        console.log('Saved New Document!');
       }
     });
   });
@@ -111,7 +116,6 @@ module.exports = (passport) => {
         res.status(500).send({ error });
       } else {
         res.status(200).send({ ownedDocs });
-        console.log(`Sent all documents associated with user ${req.params.userId}`);
       }
     });
   });
@@ -126,7 +130,6 @@ module.exports = (passport) => {
         res.status(500).send({ error });
       } else {
         res.status(200).send(doc);
-        console.log(`Sent document ${req.params.docId}`);
       }
     });
   });
@@ -161,7 +164,6 @@ module.exports = (passport) => {
         res.status(500).send({ error });
       } else {
         res.status(200).send({ contributors: doc.contributors });
-        console.log('Listed contributors');
       }
     });
   });
@@ -176,7 +178,6 @@ module.exports = (passport) => {
         res.status(500).send({ error });
       } else {
         res.status(200).send({ contributedDocs: docs });
-        console.log('Listed the docs that the user contributes to');
       }
     });
   });
@@ -191,7 +192,6 @@ module.exports = (passport) => {
         res.status(500).send({ error });
       } else {
         res.status(200).send({ deletedDoc: doc });
-        console.log('deleted document');
       }
     });
   });

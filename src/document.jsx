@@ -40,8 +40,6 @@ import PersonAdd from 'material-ui/svg-icons/social/person-add'
 import io from 'socket.io-client';
 import {currentUser} from './login.jsx';
 
-
-
 const socket = io('http://localhost:3000')
 socket.on('connect', function(){console.log('ws connect')})
 socket.on('disconnect', function(){console.log('ws disconnect')})
@@ -138,7 +136,7 @@ export default class Document extends React.Component {
       title: "",
       owner: "",
       contributors: [],
-      currentUser: currentUser
+      currentUser: currentUser,
     };
 
     fetch(`http://localhost:3000/document/${this.state.id}`)
@@ -318,6 +316,10 @@ export default class Document extends React.Component {
 
   componentDidMount() {
     console.log(this.state);
+    this.setState({
+      currentUser: currentUser,
+    })
+    console.log('CURRENT USER: '+ this.state.currentUser)
     socket.emit('join-document', { docId: this.props.match.params.docId, userToken: this.state.currentUser.user._id }, (ack) => {
       console.log('joined the document');
       if (!ack) console.error('Error joining document!');
