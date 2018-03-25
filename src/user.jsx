@@ -135,6 +135,7 @@ export default class User extends React.Component {
     fetch(`http://localhost:3000/deletedoc/${docId}`)
     .then(res => res.json())
     .then((res) => {
+      window.location.reload();
       //get the page to rerender because we dont see the document deleted unless we refresh the page
     })
     .catch(error => {
@@ -163,10 +164,17 @@ export default class User extends React.Component {
       />
       <form onSubmit={(event) => this.handleSubmit(event, history)}>
         <label>
-          Name:
-          <input type="text" name="name" placeholder="Document Title" onChange={this.handleChange.bind(this)}/>
+          <input className="form-control"
+            type="text" name="name" 
+            placeholder="Document Title" 
+            style={style.inputbox} 
+            onChange={this.handleChange.bind(this)}/>
         </label>
-        <input type="submit" value="Create New"  />
+        <input 
+          className="btn btn-primary" 
+          type="submit" 
+          value="Create New"
+          style={style.button}  />
       </form>
       <h3> Your Documents </h3>
       {(this.state.ownedDocuments).map((item) =>
@@ -200,4 +208,17 @@ export default class User extends React.Component {
  </MuiThemeProvider>
 );
  }
+ }
+
+
+
+ const style={
+   inputbox: {
+     'marginTop': '15px',
+     'marginRight': '20px',
+     'marginLeft': '10px',
+   },
+   button: {
+    "marginLeft": "20px",
+   }
  }

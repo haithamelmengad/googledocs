@@ -137,7 +137,7 @@ export default class Document extends React.Component {
       editorState: EditorState.createEmpty(),
       title: "",
       owner: "",
-      contributors:[],
+      contributors: [],
       currentUser: currentUser
     };
 
@@ -239,13 +239,35 @@ export default class Document extends React.Component {
 
 
   handleSubmitModal2() {
-    let joined = this.state.contributors;
-    joined.push(this.state.tempContributor);
-    this.setState({
-      modal2Open: false,
-      contributors: joined
-    });
-    console.log(this.state.contributors)
+    fetch(`http://localhost:3000/addContributor/${this.state.id}`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contributor: this.state.tempContributor,
+        }),
+      })
+      .then(res => res.json())
+      .then((res) => {
+        if (res.contributorAdded) { 
+        // only add contributors that don't already exist
+        let newContributors = [...this.state.contributors]
+        if(!newContributors.includes(res.contributorAdded)){
+          newContributors.push(res.contributorAdded)
+        }
+        this.setState({
+          modal2Open: false,
+          contributors: newContributors,
+        });
+        } else {
+          console.log(res.error);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
    };
 
   _handleToggle() {
@@ -337,7 +359,8 @@ export default class Document extends React.Component {
           label="Submit"
           primary={true}
           keyboardFocused={true}
-          onClick={this.handleClose.bind(this)}
+          onClick={
+            this.handleClose.bind(this)}
         />,
       ];
 

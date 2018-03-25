@@ -4,7 +4,6 @@ import models from './models/models';
 const router = express.Router();
 const User = models.User;
 const Document = models.Document;
-const Content = models.Content;
 
 // var validator = require('express-validator');
 
@@ -54,8 +53,8 @@ module.exports = (passport) => {
     EXPECTED REQUEST: { content: {contentObj} }
   */
   router.post('/document/version/:docId', (req, res) => {
-    console.log('this is req.conent ' + req.body.content)
-    Document.findByIdAndUpdate(req.params.docId, { $push: { versions: req.body.content}, $set: {title: req.body.title} }, (error, doc) => {
+    console.log(`this is req.conent ${req.body.content}`);
+    Document.findByIdAndUpdate(req.params.docId, { $push: { versions: req.body.content }, $set: { title: req.body.title } }, (error, doc) => {
       if (error) {
         console.log(`${error}. The document has not been found`);
       } else {
@@ -71,15 +70,15 @@ module.exports = (passport) => {
   */
 
   router.post('/document/:docId', (req, res) => {
-    Document.findByIdAndUpdate(req.params.docId, {$set: {currentContent: req.content}}, (error, doc) => {
-      if(error){
+    Document.findByIdAndUpdate(req.params.docId, { $set: { currentContent: req.content } }, (error, doc) => {
+      if (error) {
         console.log(error, 'the document has not been found');
-      }else{
+      } else {
         console.log('Updated the current document in the database!');
         res.send({ updated: true });
       }
-    })
-  })
+    });
+  });
 
   /*
     Create a new document for the user
@@ -106,56 +105,50 @@ module.exports = (passport) => {
     Get all Documents owned by the user
   */
   router.get('/user/:userId', (req, res) => {
-    Document.find({owner: req.params.userId}, (error, ownedDocs) => {
-      if(error){
+    Document.find({ owner: req.params.userId }, (error, ownedDocs) => {
+      if (error) {
         console.log(error);
         res.status(500).send({ error });
       } else {
-        res.status(200).send({ ownedDocs: ownedDocs });
-        console.log("Sent all documents associated with user " + req.params.userId)
+        res.status(200).send({ ownedDocs });
+        console.log(`Sent all documents associated with user ${req.params.userId}`);
       }
     });
   });
 
 /*
-  get all the documents that the user contributes to
-  TEMPORARY --> DONT IMPLEMENT YET
-*/
-
-router.get('/user/:userId', (req, res) => {
-  Document.find({contributors: req.params.userId})
-})
-
-/*
   Get information about a specific document
 */
- router.get('/document/:docId', (req, res) => {
-   Document.findById(req.params.docId, (error, doc) => {
-     if(error){
-       console.log(error);
-       res.status(500).send({ error });
-     } else {
-       res.status(200).send(doc);
-       console.log("Sent document " + req.params.docId)
-     }
-   })
- })
+  router.get('/document/:docId', (req, res) => {
+    Document.findById(req.params.docId, (error, doc) => {
+      if (error) {
+        console.log(error);
+        res.status(500).send({ error });
+      } else {
+        res.status(200).send(doc);
+        console.log(`Sent document ${req.params.docId}`);
+      }
+    });
+  });
 
  /*
   Add contributors to the document
   EXPECTED REQUEST: { contributor: userId }
  */
   router.post('/addContributor/:docId', (req, res) => {
-    Document.findByIdAndUpdate(req.params.docId, { $push: { contributors: req.body.contributor }}, (error, doc) => {
-      if(error){
-        console.log(error);
-        res.status(500).send({ error });
-      } else {
-        res.status(200).send({contributorAdded: req.body.contributor});
-        console.log('Added contributor', req.body.contributor, 'to document ', docId)
-      }
-    })
-  })
+    User.findOne({ username: req.body.contributor })
+    .then((contributor) => {
+      // Add contributors to the document if they do not already exist
+      Document.findByIdAndUpdate(req.params.docId, { $addToSet: { contributors: contributor._id } })
+      .then(() => {
+        res.status(200).send({ contributorAdded: req.body.contributor });
+      })
+        .catch((error) => {
+          console.log(error);
+        });
+    });
+  });
+
 
   /*
     List contributors for a current document
@@ -163,7 +156,7 @@ router.get('/user/:userId', (req, res) => {
   */
   router.get('/contributors/:docId', (req, res) => {
     Document.findById(req.params.docId, (error, doc) => {
-      if(error){
+      if (error) {
         console.log(error);
         res.status(500).send({ error });
       } else {
@@ -177,32 +170,31 @@ router.get('/user/:userId', (req, res) => {
     Find all the documents that a specific user contributes to
   */
   router.get('/contributor-docs/:userId', (req, res) => {
-    Document.find({contributors : req.params.userId}, (error, docs) => {
-      if(error){
+    Document.find({ contributors: req.params.userId }, (error, docs) => {
+      if (error) {
         console.log(error);
         res.status(500).send({ error });
-      }else {
+      } else {
         res.status(200).send({ contributedDocs: docs });
         console.log('Listed the docs that the user contributes to');
       }
-    })
-  })
+    });
+  });
 
+  /*
+    Delete a specific document from the database
+  */
   router.get('/deletedoc/:docId', (req, res) => {
-    console.log("Made it to the back end");
-    Document.findOneAndRemove({_id: req.params.docId}, (error, doc) => {
-      if(error){
+    Document.findOneAndRemove({ _id: req.params.docId }, (error, doc) => {
+      if (error) {
         console.log(error);
         res.status(500).send({ error });
       } else {
         res.status(200).send({ deletedDoc: doc });
         console.log('deleted document');
       }
-    })
-  })
-
-
-
+    });
+  });
 
 
   // CREATE A LOGOUT BUTTON
