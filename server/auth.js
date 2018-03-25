@@ -16,7 +16,6 @@ module.exports = (passport) => {
     user is successfully registered.
   */
   router.post('/register', (req, res) => {
-    console.log('IM IN HERE');
     // Find if the username already exists in the database
     User.findOne({ username: req.body.username })
     .then((user) => {
@@ -112,7 +111,6 @@ module.exports = (passport) => {
   router.get('/user/:userId', (req, res) => {
     Document.find({ owner: req.params.userId }, (error, ownedDocs) => {
       if (error) {
-        console.log(error);
         res.status(500).send({ error });
       } else {
         res.status(200).send({ ownedDocs });
@@ -126,7 +124,6 @@ module.exports = (passport) => {
   router.get('/document/:docId', (req, res) => {
     Document.findById(req.params.docId, (error, doc) => {
       if (error) {
-        console.log(error);
         res.status(500).send({ error });
       } else {
         res.status(200).send(doc);
@@ -147,7 +144,7 @@ module.exports = (passport) => {
         res.status(200).send({ contributorAdded: req.body.contributor });
       })
         .catch((error) => {
-          console.log(error);
+          res.status(500).send({ error });
         });
     });
   });
@@ -160,7 +157,6 @@ module.exports = (passport) => {
   router.get('/contributors/:docId', (req, res) => {
     Document.findById(req.params.docId, (error, doc) => {
       if (error) {
-        console.log(error);
         res.status(500).send({ error });
       } else {
         res.status(200).send({ contributors: doc.contributors });
@@ -174,7 +170,6 @@ module.exports = (passport) => {
   router.get('/contributor-docs/:userId', (req, res) => {
     Document.find({ contributors: req.params.userId }, (error, docs) => {
       if (error) {
-        console.log(error);
         res.status(500).send({ error });
       } else {
         res.status(200).send({ contributedDocs: docs });
@@ -188,7 +183,6 @@ module.exports = (passport) => {
   router.get('/deletedoc/:docId', (req, res) => {
     Document.findOneAndRemove({ _id: req.params.docId }, (error, doc) => {
       if (error) {
-        console.log(error);
         res.status(500).send({ error });
       } else {
         res.status(200).send({ deletedDoc: doc });

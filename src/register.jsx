@@ -32,7 +32,7 @@ class Register extends React.Component {
       .then(res => res.json())
       .then((res) => {
         if (res.registered === true) {
-          history.push('/login');
+          history.push('/');
         } else {
           alert(res.error); 
         }
@@ -42,7 +42,7 @@ class Register extends React.Component {
 
     this.handleLoginClick = (history) => {
     // console.log(`this is history : ${history}`);
-      history.push('/login');
+      history.push('/');
     };
 
     this.handleUsernameChange = (event) => {

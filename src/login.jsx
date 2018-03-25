@@ -16,7 +16,7 @@ class Login extends React.Component {
       password: 'No password specified',
     };
     this.handleRegisterClick = (history) => {
-      history.push('/');
+      history.push('/register');
     };
     this.handleUsernameChange = (event) => {
       this.setState({

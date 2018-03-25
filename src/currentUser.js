@@ -1,5 +1,5 @@
 import { currentUser } from './login';
 
 export default {
-    user: null
-}
+  user: currentUser,
+};

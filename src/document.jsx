@@ -158,10 +158,9 @@ export default class Document extends React.Component {
 
     this.onChange = (editorState) => {
       const contentState = editorState.getCurrentContent();
-      socket.emit('document-save', { secretToken: this.secretToken, state: convertToRaw(contentState), docId: this.props.match.params.docId, userToken: this.state.owner} )
-      return this.setState({ editorState });
+      socket.emit('document-save', { secretToken: this.secretToken, state: convertToRaw(contentState), docId: this.props.match.params.docId, userToken: currentUser.user._id});
+      this.setState({ editorState });
     };
-
     this.handleKeyCommand = this.handleKeyCommand.bind(this);
 
 
@@ -213,7 +212,6 @@ export default class Document extends React.Component {
     .catch((error) => {
       console.log(error);
     });
-
   }
 
   //opens title modal
@@ -300,7 +298,6 @@ export default class Document extends React.Component {
   */
 
  _handleChangeModal2(event) {
-   console.log(event.target.value)
   this.setState({
     tempContributor: event.target.value
   });
@@ -315,13 +312,10 @@ export default class Document extends React.Component {
 
 
   componentDidMount() {
-    console.log(this.state);
     this.setState({
       currentUser: currentUser,
     })
-    console.log('CURRENT USER: '+ this.state.currentUser)
     socket.emit('join-document', { docId: this.props.match.params.docId, userToken: this.state.currentUser.user._id }, (ack) => {
-      console.log('joined the document');
       if (!ack) console.error('Error joining document!');
       this.secretToken = ack.secretToken;
       this.docId = ack.docId;
@@ -332,11 +326,9 @@ export default class Document extends React.Component {
       }
     });
     socket.on('document-update', (update) => {
-      console.log('document updated');
       const { state, docId, userToken } = update;
       if (currentUser.user._id !== userToken) {
-        console.log('setting the state');
-        // this.setState({ editorState: EditorState.createWithContent(convertFromRaw(state)) });
+        this.setState({editorState: EditorState.createWithContent(convertFromRaw(state))});
       }
     });
   }
@@ -476,7 +468,8 @@ export default class Document extends React.Component {
                 customStyleMap={customStyleMap}
                 editorState={this.state.editorState}
                 handleKeyCommand={this.handleKeyCommand}
-                onChange={this.onChange.bind(this)}
+                // onChange={this.onChange.bind(this)}
+                onChange={(editorState) => this.onChange(editorState)}
               />
             </Paper>
           </div>

@@ -13,8 +13,8 @@ export default class App extends React.Component {
     return (
       <Router>
         <div>
-          <Route path={'/'} exact component={Register} />
-          <Route path={'/login'} component={Login} />
+          <Route path={'/register'} component={Register} />
+          <Route path={'/'} exact component={Login} />
           <Route path={'/user/:userId'} component={User} />
           <Route path={'/document/:docId'} component={Document} />
         </div>
