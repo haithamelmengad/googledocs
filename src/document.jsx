@@ -32,8 +32,8 @@ import NavigationClose from 'material-ui/svg-icons/navigation/close';
 import FlatButton from 'material-ui/FlatButton';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import Dialog from 'material-ui/Dialog';
-import FormatSize from 'material-ui/svg-icons/editor/format-size'
-import PersonAdd from 'material-ui/svg-icons/social/person-add'
+import FormatSize from 'material-ui/svg-icons/editor/format-size';
+import PersonAdd from 'material-ui/svg-icons/social/person-add';
 
 
 //Socket import

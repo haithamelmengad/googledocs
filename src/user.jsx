@@ -10,6 +10,7 @@ import Drawer from 'material-ui/Drawer';
 import MenuItem from 'material-ui/MenuItem';
 import RaisedButton from 'material-ui/RaisedButton';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import SearchBar from 'material-ui-search-bar';
 
 //Draft JS imports
 import { EditorState, convertToRaw, convertFromRaw } from 'draft-js';
@@ -176,12 +177,21 @@ export default class User extends React.Component {
           value="Create New"
           style={style.button}  />
       </form>
+      {/* CAN YOU PLEASE MAKE THIS GO ON THE RIGHT OF THE OTHER INPUT FIELD */}
+      <SearchBar
+        onChange={() => console.log('onChange')}
+        onRequestSearch={() => console.log('onRequestSearch')}
+        style={{
+          margin: '0 auto',
+          maxWidth: 600
+        }}
+      />
       <h3> Your Documents </h3>
       {(this.state.ownedDocuments).map((item) =>
         <Card key={item._id}>
           <CardHeader
             title= {item.title}
-            subtitle={item.owner}
+            // subtitle={item.owner}
           />
           <CardActions>
             <FlatButton label="Open" onClick={() => this.handleOpen(history, item._id)}/>
@@ -194,7 +204,7 @@ export default class User extends React.Component {
         <Card key={item._id}>
           <CardHeader
             title= {item.title}
-            subtitle={item.owner}
+            // subtitle={item.owner}
           />
           <CardActions>
             <FlatButton label="Open" onClick={() => this.handleOpen(history, item._id)}/>
