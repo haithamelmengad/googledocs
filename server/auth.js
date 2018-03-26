@@ -1,5 +1,6 @@
 import express from 'express';
 import models from './models/models';
+import bodyParser from 'body-parser';
 
 const router = express.Router();
 const User = models.User;
@@ -110,6 +111,10 @@ module.exports = (passport) => {
   */
   router.get('/user/:userId', (req, res) => {
     Document.find({ owner: req.params.userId }, (error, ownedDocs) => {
+
+      if(req.body.searched){
+        ownedDoc
+      }
       if (error) {
         res.status(500).send({ error });
       } else {
@@ -117,6 +122,21 @@ module.exports = (passport) => {
       }
     });
   });
+
+  /*
+    Search specific Documents owned by the user using title from request
+*/
+
+ router.post('/user/search/:userId', (req, res) => {
+   console.log( 'this is title ' + req.body.title );
+  Document.find({ title: req.body.title }, (error, ownedDocs) => {
+    if (error) {
+      res.status(500).send({ error });
+    } else {
+      res.status(200).send({ ownedDocs });
+    }
+  });
+});
 
 /*
   Get information about a specific document

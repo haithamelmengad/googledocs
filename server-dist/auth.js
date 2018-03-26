@@ -195,6 +195,19 @@ module.exports = function (passport) {
     });
   });
 
+  router.get('/deletedoc/:docId', function (req, res) {
+    console.log("Made it to the back end");
+    Document.findOneAndRemove({ _id: req.params.docId }, function (error, doc) {
+      if (error) {
+        console.log(error);
+        res.status(500).send({ error: error });
+      } else {
+        res.status(200).send({ deletedDoc: doc });
+        console.log('deleted document');
+      }
+    });
+  });
+
   // CREATE A LOGOUT BUTTON
   router.get('/logout', function (req, res) {
     req.logout();

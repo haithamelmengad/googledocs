@@ -29,7 +29,8 @@ export default class User extends React.Component {
       id: this.props.match.params.userId,
       title: '',
       ownedDocuments: [],
-      contributedDocuments: []
+      contributedDocuments: [],
+      searchedTitle: ''
     }
     console.log(this.state.id);
     console.log(this.props.match.params.userId);
@@ -103,7 +104,7 @@ export default class User extends React.Component {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        title: this.state.title,
+        title: event.target.value,
         versions: convertToRaw(EditorState.createEmpty().getCurrentContent()),
       }),
     })
@@ -119,10 +120,10 @@ export default class User extends React.Component {
 
   }
 
-/*
-  handleOpen(history, docId)
-  redirects user to desired document page
-*/
+  /*
+    handleOpen(history, docId)
+    redirects user to desired document page
+  */
   handleOpen(history, docId) {
     history.push(`/document/${docId}`)
   }
@@ -132,6 +133,7 @@ export default class User extends React.Component {
     deletes a given document from the database when user
     clicks the delete button
   */
+
   handleDelete(docId) {
     fetch(`http://localhost:3000/deletedoc/${docId}`)
     .then(res => res.json())
@@ -143,6 +145,36 @@ export default class User extends React.Component {
       console.log(error);
       alert(error);
     })
+  }
+
+
+/*
+    handleSearch
+    Find document by exact title by posting a request to db
+*/
+  handleSearch(docInfo) {
+    console.log(event.target.value);
+    let id = this.state.id;
+    fetch(`http://localhost:3000/user/search/${id}`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title: this.state.searchedTitle
+      })
+    })
+    .then(res => res.json())
+    .then((res) => {
+      this.setState({ownedDocuments : res.ownedDocs})
+    })
+    .catch(error => {
+      console.log(error);
+      alert(error);
+    })
+
+
   }
 
   /*
@@ -181,8 +213,9 @@ export default class User extends React.Component {
           />
         </form>
         <SearchBar
-          onChange={() => console.log('onChange')}
-          onRequestSearch={() => console.log('onRequestSearch')}
+          value={this.state.searchedTitle}
+          onChange={(title) => this.setState({ searchedTitle: title })}
+          onRequestSearch={this.handleSearch.bind(this)}
           style={style.search}
         />
       </div>
