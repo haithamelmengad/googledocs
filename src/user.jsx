@@ -163,29 +163,29 @@ export default class User extends React.Component {
       title="Username"
       iconClassNameRight="muidocs-icon-navigation-expand-more"
       />
-      <form onSubmit={(event) => this.handleSubmit(event, history)}>
-        <label>
-          <input className="form-control"
-            type="text" name="name" 
-            placeholder="Document Title" 
-            style={style.inputbox} 
-            onChange={this.handleChange.bind(this)}/>
-        </label>
-        <input 
-          className="btn btn-primary" 
-          type="submit" 
-          value="Create New"
-          style={style.button}  />
-      </form>
-      {/* CAN YOU PLEASE MAKE THIS GO ON THE RIGHT OF THE OTHER INPUT FIELD */}
-      <SearchBar
-        onChange={() => console.log('onChange')}
-        onRequestSearch={() => console.log('onRequestSearch')}
-        style={{
-          margin: '0 auto',
-          maxWidth: 600
-        }}
-      />
+      <div className="inputContainer" style={style.inputContainer}>
+        <form onSubmit={(event) => this.handleSubmit(event, history)}>
+          <label>
+            <input className="form-control"
+              type="text" name="name"
+              placeholder="Document Title"
+              style={style.inputbox}
+              onChange={this.handleChange.bind(this)}
+            />
+          </label>
+          <input
+            className="btn btn-secondary"
+            type="submit"
+            value="Create New"
+            style={style.button}
+          />
+        </form>
+        <SearchBar
+          onChange={() => console.log('onChange')}
+          onRequestSearch={() => console.log('onRequestSearch')}
+          style={style.search}
+        />
+      </div>
       <h3> Your Documents </h3>
       {(this.state.ownedDocuments).map((item) =>
         <Card key={item._id}>
@@ -227,8 +227,37 @@ export default class User extends React.Component {
      'marginTop': '15px',
      'marginRight': '20px',
      'marginLeft': '10px',
+    'padding': '0px',
+    'position': 'relative',
+    'width': '100%',
+    'border': 'none',
+    'outline': 'none',
+    'backgroundColor': 'white',
+    'color': 'rgba(0, 0, 0, 0.87)',
+    'cursor': 'auto',
+    'fontSize': '16px',
+    'lineHeight': '24px',
+    'fontFamily': 'Roboto, sans-serif',
+    'opacity': '1',
+    'height': '100%',
+    '-webkit- appearance': 'textfield',
+   'height': '48px',
+   'boxShadow': 'rgba(0, 0, 0, .12) 0px 1px 6px',
+   'paddingLeft': '24px',
+   'paddingRight': '24px',
+    
    },
    button: {
     "marginLeft": "20px",
-   }
+    'height': '48px'
+   },
+   search: {
+     'marginRight': '20px',
+     'marginTop': '15px',
+     'maxWidth': '600px',
+   },
+   inputContainer: {
+    'display': 'flex',
+    'justifyContent': 'space-between',
+   },
  }
