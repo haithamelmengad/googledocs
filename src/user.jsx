@@ -1,6 +1,7 @@
 //React and react router imports
 import React from 'react';
 import { HashRouter as Router, Route } from 'react-router-dom';
+import { withRouter } from 'react-router';
 
 //Material UI asset imports
 import AppBar from 'material-ui/AppBar';
@@ -14,10 +15,10 @@ import SearchBar from 'material-ui-search-bar';
 
 //Draft JS imports
 import { EditorState, convertToRaw, convertFromRaw } from 'draft-js';
+import currentUser from './currentUser'
 
 
-
-export default class User extends React.Component {
+class User extends React.Component {
 
   /*
     set intial state
@@ -34,8 +35,6 @@ export default class User extends React.Component {
     }
     console.log(this.state.id);
     console.log(this.props.match.params.userId);
-    this.aquireOwnedDocuments();
-    this.aquireContributedDocuments();
     console.log('CONTRIBUTED DOCUMENTS:', this.state.contributedDocuments);
   };
 
@@ -185,6 +184,27 @@ export default class User extends React.Component {
     - history must be passed to any function that wishes to use it
     - all cards are created using a map function
   */
+  logout() {
+    console.log('logout')
+    currentUser.token = null;
+    currentUser.user = null;
+    window.localStorage.removeItem('currentUser');
+    this.props.history.push('/');
+  }
+
+  componentDidMount() {
+    if (!currentUser.token) {
+      const savedCurrentUser = window.localStorage.getItem('currentUser');
+      if (savedCurrentUser) {
+        Object.assign(currentUser, JSON.parse(savedCurrentUser));
+      } else {
+        this.props.history.push('/');
+        return;
+      }
+    }
+    this.aquireOwnedDocuments();
+    this.aquireContributedDocuments();
+  }
 
   render() {
    return (
@@ -194,6 +214,7 @@ export default class User extends React.Component {
      <AppBar
       title="Username"
       iconClassNameRight="muidocs-icon-navigation-expand-more"
+      onLeftIconButtonClick={() => this.logout()}
       />
       <div className="inputContainer" style={style.inputContainer}>
         <form onSubmit={(event) => this.handleSubmit(event, history)}>
@@ -273,7 +294,7 @@ export default class User extends React.Component {
     'fontFamily': 'Roboto, sans-serif',
     'opacity': '1',
     'height': '100%',
-    '-webkit- appearance': 'textfield',
+    'WebkitAppearance': 'textfield',
    'height': '48px',
    'boxShadow': 'rgba(0, 0, 0, .12) 0px 1px 6px',
    'paddingLeft': '24px',
@@ -294,3 +315,5 @@ export default class User extends React.Component {
     'justifyContent': 'space-between',
    },
  }
+
+export default withRouter(User);

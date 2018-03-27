@@ -3,6 +3,8 @@ import { Route } from 'react-router-dom';
 import Style from './styles.js';
 import currentUser from './currentUser';
 import crypto from 'crypto';
+import jsonwebtoken from 'jsonwebtoken';
+import { withRouter } from 'react-router'
 
 function md5(data) {
   return crypto.createHash('md5').update(data).digest('hex');
@@ -15,7 +17,8 @@ class Login extends React.Component {
       username: 'No username specified',
       password: 'No password specified',
     };
-    this.handleRegisterClick = (history) => {
+    this.handleRegisterClick = () => {
+      const { history } = this.props;      
       history.push('/register');
     };
     this.handleUsernameChange = (event) => {
@@ -29,33 +32,50 @@ class Login extends React.Component {
         password: event.target.value,
       });
     };
-    this.handleLoginClick = (history) => {
-      fetch('http://localhost:3000/login', {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username: this.state.username, password: md5(this.state.password) }),
-      })
-      .then(res => res.json())
-      .then((res) => {
-        if (res.loggedIn === true) {
-          currentUser.user = res.user;
-          history.push(`/user/${res.user._id}`);
-        } else {
-          currentUser.user = null;
-          alert('failed to login successfully');
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-    };
+    this.handleLoginClick = () => {
+      currentUser.token = `Bearer ${jsonwebtoken.sign({
+        username: this.state.username,
+        password: md5(this.state.password)
+      }, process.env.JWT_SECRET)}`;
+      this.login();
+    }
+  }
+  login() {
+    const { history } = this.props;
+    fetch('http://localhost:3000/login', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: currentUser.token,
+      },
+    })
+    .then(res => res.json())
+    .then((res) => {
+      if (res.loggedIn === true) {
+        currentUser.user = res.user;
+        window.localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        history.push(`/user/${res.user._id}`);
+      } else {
+        currentUser.user = null;
+        alert('failed to login successfully');
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+  }
+
+  componentDidMount() {
+    const savedCurrentUser = window.localStorage.getItem('currentUser');
+    if (savedCurrentUser) {
+      Object.assign(currentUser, JSON.parse(savedCurrentUser));
+      this.login();
+    }
   }
 
   render() {
-    return (<Route render={({ history }) => (
+    return (
       <div style={Style.largeContainer}>
         <div>
           <div>
@@ -63,7 +83,7 @@ class Login extends React.Component {
               <button
                 className="btn btn-xs"
                 style={Style.btn}
-                onClick={() => this.handleRegisterClick(history)} // correct syntax??
+                onClick={() => this.handleRegisterClick()} // correct syntax??
               >Register</button>
             </div>
           </div>
@@ -103,7 +123,7 @@ class Login extends React.Component {
                 type="submit"
                 className="btn btn-md btn-primary"
                 style={Style.btn}
-                onClick={() => this.handleLoginClick(history)}
+                onClick={() => this.handleLoginClick()}
               >Log In</button>
             </div>
           </div>
@@ -111,10 +131,6 @@ class Login extends React.Component {
       </div>
     )
   }
-    />);
-  }
 }
 
-
-exports.Login = Login;
-exports.currentUser = currentUser;
+export default withRouter(Login);

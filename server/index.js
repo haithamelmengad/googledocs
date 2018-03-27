@@ -82,24 +82,49 @@ passport.deserializeUser((id, done) => {
 
 const LocalStrategy = require('passport-local').Strategy;
 
-passport.use(new LocalStrategy(
-  (username, password, done) => {
-    User.findOne({ username }, (err, user) => {
-      console.log('USER', user);
-      if (err) {
-        return done(err);
-      }
-      if (!user) {
-        return done(null, false, { message: 'Incorrect username.' });
-      }
-      if (user.password !== password) {
-        return done(null, false, { message: 'Incorrect password.' });
-      }
-      console.log('Got to the end');
-      return done(null, user);
-    });
-  },
-));
+
+var JwtStrategy = require('passport-jwt').Strategy,
+    ExtractJwt = require('passport-jwt').ExtractJwt;
+var opts = {
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+  secretOrKey: process.env.JWT_SECRET,
+}
+
+passport.use(new JwtStrategy(opts, function(jwt_payload, done) {
+  User.findOne({username: jwt_payload.username}, (err, user) => {
+    console.log('USER', user);
+    if (err) {
+      return done(err);
+    }
+    if (!user) {
+      return done(null, false, { message: 'Incorrect username.' });
+    }
+    if (user.password !== jwt_payload.password) {
+      return done(null, false, { message: 'Incorrect password.' });
+    }
+    console.log('Got to the end');
+    return done(null, user);
+  });
+}));
+
+// passport.use(new LocalStrategy(
+//   (username, password, done) => {
+//     User.findOne({ username }, (err, user) => {
+//       console.log('USER', user);
+//       if (err) {
+//         return done(err);
+//       }
+//       if (!user) {
+//         return done(null, false, { message: 'Incorrect username.' });
+//       }
+//       if (user.password !== password) {
+//         return done(null, false, { message: 'Incorrect password.' });
+//       }
+//       console.log('Got to the end');
+//       return done(null, user);
+//     });
+//   },
+// ));
 
 app.use(passport.initialize());
 app.use(passport.session());

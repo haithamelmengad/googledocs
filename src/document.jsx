@@ -1,7 +1,7 @@
 //react imports
 import React from 'react';
 import { HashRouter as Router, Route } from 'react-router-dom';
-
+import { withRouter } from 'react-router';
 //draft-js imports
 import { Editor, EditorState, RichUtils, convertToRaw, convertFromRaw } from 'draft-js';
 import createStyles from 'draft-js-custom-styles';
@@ -38,7 +38,7 @@ import PersonAdd from 'material-ui/svg-icons/social/person-add';
 
 //Socket import
 import io from 'socket.io-client';
-import {currentUser} from './login.jsx';
+import currentUser from './currentUser';
 
 const socket = io('http://localhost:3000')
 socket.on('connect', function(){console.log('ws connect')})
@@ -116,7 +116,7 @@ function getBlockStyle(block) {
   return null
 }
 
-export default class Document extends React.Component {
+class Document extends React.Component {
   /*
     constructor()
     sets an initial state for the document
@@ -312,10 +312,19 @@ export default class Document extends React.Component {
 
 
   componentDidMount() {
+    if (!currentUser.token) {
+      const savedCurrentUser = window.localStorage.getItem('currentUser');
+      if (savedCurrentUser) {
+        Object.assign(currentUser, JSON.parse(savedCurrentUser));
+      } else {
+        this.props.history.push('/');
+        return;
+      }
+    }
     this.setState({
       currentUser: currentUser,
     })
-    socket.emit('join-document', { docId: this.props.match.params.docId, userToken: this.state.currentUser.user._id }, (ack) => {
+    socket.emit('join-document', { docId: this.props.match.params.docId, userToken: currentUser.user._id }, (ack) => {
       if (!ack) console.error('Error joining document!');
       this.secretToken = ack.secretToken;
       this.docId = ack.docId;
@@ -548,3 +557,5 @@ export default class Document extends React.Component {
   }
 
  }
+
+ export default withRouter(Document);

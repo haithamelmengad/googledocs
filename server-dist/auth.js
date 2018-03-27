@@ -51,7 +51,7 @@ module.exports = function (passport) {
     a user in the databse.
     Sends a {loggedIn: true} response if login is successful
   */
-  router.post('/login', passport.authenticate('local'), function (req, res) {
+  router.post('/login', passport.authenticate('jwt'), function (req, res) {
     console.log('Check req.user (make sure it has _id): ', req.user);
     res.send({ user: req.user, loggedIn: true });
   });

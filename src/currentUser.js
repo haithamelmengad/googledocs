@@ -1,5 +1,3 @@
-import { currentUser } from './login';
-
-export default {
-  user: currentUser,
-};
+const currentUser =  {};
+// window.currentUser = currentUser;
+export default currentUser;

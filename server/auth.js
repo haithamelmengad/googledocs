@@ -51,7 +51,7 @@ module.exports = (passport) => {
     a user in the databse.
     Sends a {loggedIn: true} response if login is successful
   */
-  router.post('/login', passport.authenticate('local'), (req, res) => {
+  router.post('/login', passport.authenticate('jwt'), (req, res) => {
     res.send({ user: req.user, loggedIn: true });
   });
 
