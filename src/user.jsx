@@ -226,12 +226,12 @@ class User extends React.Component {
               onChange={this.handleChange.bind(this)}
             />
           </label>
-          <input
-            className="btn btn-secondary"
+          <RaisedButton
+            className="mui-btn mui-btn--primary"
             type="submit"
-            value="Create New"
+            // label="Create New"
             style={style.button}
-          />
+          >Create New</RaisedButton>
         </form>
         <SearchBar
           value={this.state.searchedTitle}
@@ -240,27 +240,29 @@ class User extends React.Component {
           style={style.search}
         />
       </div>
-      <h3> Your Documents </h3>
+      <h3 style={style.h3}> Your Documents </h3>
       {(this.state.ownedDocuments).map((item) =>
-        <Card key={item._id}>
+        <Card key={item._id} style={style.card}>
           <CardHeader
             title= {item.title}
+            style={style.cardHeader}
             // subtitle={item.owner}
           />
-          <CardActions>
+          <CardActions style={style.cardActions}>
             <FlatButton label="Open" onClick={() => this.handleOpen(history, item._id)}/>
             <FlatButton label="Delete" onClick={() => this.handleDelete(item._id)} />
           </CardActions>
         </Card>
        )}
-       <h3> Shared With You </h3>
+       <h3 style={style.h3}>Shared With You</h3>
        {(this.state.contributedDocuments).map((item) =>
-        <Card key={item._id}>
+        <Card key={item._id} style={style.card}>
           <CardHeader
+            style={style.cardHeader}
             title= {item.title}
             // subtitle={item.owner}
           />
-          <CardActions>
+          <CardActions style={style.cardActions}>
             <FlatButton label="Open" onClick={() => this.handleOpen(history, item._id)}/>
             <FlatButton label="Delete" />
           </CardActions>
@@ -292,18 +294,20 @@ class User extends React.Component {
     'fontSize': '16px',
     'lineHeight': '24px',
     'fontFamily': 'Roboto, sans-serif',
+    'font': 'roboto',
     'opacity': '1',
     'height': '100%',
     'WebkitAppearance': 'textfield',
-   'height': '48px',
-   'boxShadow': 'rgba(0, 0, 0, .12) 0px 1px 6px',
-   'paddingLeft': '24px',
-   'paddingRight': '24px',
+    'height': '48px',
+    'boxShadow': 'rgba(0, 0, 0, .12) 0px 1px 6px',
+    'paddingLeft': '24px',
+    'paddingRight': '24px',
+    'fontWeight': 'normal',
     
    },
    button: {
-    "marginLeft": "20px",
-    'height': '48px'
+    "marginLeft": "25px",
+    // 'height': '48px'
    },
    search: {
      'marginRight': '20px',
@@ -314,6 +318,22 @@ class User extends React.Component {
     'display': 'flex',
     'justifyContent': 'space-between',
    },
+   h3: {
+    'fontFamily': 'Roboto, sans-serif',
+    'marginLeft': '5px',
+   },
+   card: {
+     'display': 'flex',
+     'justifyContent': 'space-between', //this isnt working yet
+   },
+   cardHeader: {
+     'display': 'inline-block',
+   },
+   cardActions: {
+     'display': 'inline-block',
+    //  'justifySelf': 'flex-end', //this is not working yet
+
+   }
  }
 
 export default withRouter(User);

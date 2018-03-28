@@ -4,7 +4,9 @@ import Style from './styles.js';
 import currentUser from './currentUser';
 import crypto from 'crypto';
 import jsonwebtoken from 'jsonwebtoken';
-import { withRouter } from 'react-router'
+import { withRouter } from 'react-router';
+import RaisedButton from 'material-ui/RaisedButton';
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 
 function md5(data) {
   return crypto.createHash('md5').update(data).digest('hex');
@@ -76,15 +78,16 @@ class Login extends React.Component {
 
   render() {
     return (
+      <MuiThemeProvider>
       <div style={Style.largeContainer}>
         <div>
           <div>
             <div style={Style.topButtonContainer}>
-              <button
-                className="btn btn-xs"
-                style={Style.btn}
+              <RaisedButton
+                className="mui-btn mui-btn--small mui-btn--primary"
+                // style={Style.btn}
                 onClick={() => this.handleRegisterClick()} // correct syntax??
-              >Register</button>
+              >Register</RaisedButton>
             </div>
           </div>
         </div>
@@ -119,16 +122,17 @@ class Login extends React.Component {
               <div className="clearfix" />
             </div>
             <div style={Style.loginBtnContainer}>
-              <button
+              <RaisedButton
                 type="submit"
-                className="btn btn-md btn-primary"
-                style={Style.btn}
+                className="mui-btn mui-btn--primary"
+                // style={Style.btn}
                 onClick={() => this.handleLoginClick()}
-              >Log In</button>
+              >Log In</RaisedButton>
             </div>
           </div>
         </div>
       </div>
+      </MuiThemeProvider>
     )
   }
 }

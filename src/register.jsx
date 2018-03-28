@@ -2,6 +2,8 @@ import React from 'react';
 import crypto from 'crypto';
 import { Route } from 'react-router-dom';
 import Style from './styles.js';
+import RaisedButton from 'material-ui/RaisedButton';
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 
 // Hash funciton to make passwords secure
 function md5(data) {
@@ -67,15 +69,15 @@ class Register extends React.Component {
 
   render() {
     return (<Route render={({ history }) => (
-      <div style={Style.largeContainer}>
+      <MuiThemeProvider><div style={Style.largeContainer}>
         <div>
           <div>
             <div style={Style.topButtonContainer}>
-              <button
-                className="btn btn-xs"
-                style={Style.btn}
+              <RaisedButton
+                className="mui-btn mui-btn--small mui-btn--primary"
+                // style={Style.btn}
                 onClick={() => this.handleLoginClick(history)}
-              >Log In</button>
+              >Log In</RaisedButton>
             </div>
           </div>
         </div>
@@ -120,16 +122,17 @@ class Register extends React.Component {
               </div>
             </center>
             <div style={Style.loginBtnContainer}>
-              <button
+              <RaisedButton
                 type="submit"
-                className="btn btn-md btn-primary"
-                style={Style.btn}
+                className="mui-btn mui-btn--primary"
+                // style={Style.btn}
                 onClick={() => this.handleRegisterClick(history)}  // corect syntax??
-              >Register</button>
+              >Register</RaisedButton>
             </div>
           </div>
         </div>
       </div>
+      </MuiThemeProvider>
     )}
     />);
   }
