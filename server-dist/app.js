@@ -1,50 +1,35 @@
 'use strict';
 
 var _passport = require('passport');
-
 var _passport2 = _interopRequireDefault(_passport);
 
 var _express = require('express');
-
 var _express2 = _interopRequireDefault(_express);
 
 var _expressSession = require('express-session');
-
 var _expressSession2 = _interopRequireDefault(_expressSession);
 
 var _bodyParser = require('body-parser');
-
 var _bodyParser2 = _interopRequireDefault(_bodyParser);
 
 var _mongoose = require('mongoose');
-
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
 var _path = require('path');
-
 var _path2 = _interopRequireDefault(_path);
 
 var _morgan = require('morgan');
-
 var _morgan2 = _interopRequireDefault(_morgan);
 
 var _cookieParser = require('cookie-parser');
-
 var _cookieParser2 = _interopRequireDefault(_cookieParser);
 
 var _models = require('./models/models.js');
-
 var _models2 = _interopRequireDefault(_models);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var connect = process.env.MONGODB_URI;
-
-// import React from 'react';
-
-
-// import { Route } from 'react-router-dom';
-// import Style from '../src/styles.js';
 
 _mongoose2.default.connect(connect);
 var User = _models2.default.User;

@@ -90,6 +90,8 @@ module.exports = (passport) => {
     Create a new document for the user
   */
   router.post('/user/:userId', (req, res) => {
+    console.log("this is userId " + req.params.userId)
+    console.log("this is title " + req.body.title)
     const document = new Document({
       title: req.body.title,
       owner: req.params.userId,

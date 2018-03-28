@@ -1,18 +1,30 @@
+//react and react router inputs
 import React from 'react';
 import { Route } from 'react-router-dom';
-import Style from './styles.js';
-import currentUser from './currentUser';
+import { withRouter } from 'react-router';
+
+//crypto imports
 import crypto from 'crypto';
 import jsonwebtoken from 'jsonwebtoken';
-import { withRouter } from 'react-router';
+
+//other doc imports
+import Style from './styles.js';
+import currentUser from './currentUser';
+
+//material UI imports
 import RaisedButton from 'material-ui/RaisedButton';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 
+//Hash function
 function md5(data) {
   return crypto.createHash('md5').update(data).digest('hex');
 }
 
 class Login extends React.Component {
+  /*
+    constructor()
+    sets an initial state for the document
+  */
   constructor(props) {
     super(props);
     this.state = {
@@ -20,7 +32,7 @@ class Login extends React.Component {
       password: 'No password specified',
     };
     this.handleRegisterClick = () => {
-      const { history } = this.props;      
+      const { history } = this.props;
       history.push('/register');
     };
     this.handleUsernameChange = (event) => {
@@ -42,6 +54,13 @@ class Login extends React.Component {
       this.login();
     }
   }
+
+  /*
+    login()
+    preforms a fetch request to the server to log the user in
+    preforms an alert if login fails
+    if successful redirect to /user/userId
+  */
   login() {
     const { history } = this.props;
     fetch('http://localhost:3000/login', {
@@ -68,6 +87,11 @@ class Login extends React.Component {
     });
   }
 
+  /*
+    componentDidMount()
+    only runs when the component renders
+    ensures login persists on refresh
+  */
   componentDidMount() {
     const savedCurrentUser = window.localStorage.getItem('currentUser');
     if (savedCurrentUser) {

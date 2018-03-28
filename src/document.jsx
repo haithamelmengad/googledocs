@@ -2,10 +2,12 @@
 import React from 'react';
 import { HashRouter as Router, Route } from 'react-router-dom';
 import { withRouter } from 'react-router';
+
 //draft-js imports
 import { Editor, EditorState, RichUtils, convertToRaw, convertFromRaw } from 'draft-js';
-import createStyles from 'draft-js-custom-styles';
 
+//draft-js-custom styles imports
+import createStyles from 'draft-js-custom-styles';
 
 //material UI inputs
 import { Card, CardActions, CardHeader, CardMedia, CardTitle, CardText } from 'material-ui/Card';
@@ -40,6 +42,7 @@ import PersonAdd from 'material-ui/svg-icons/social/person-add';
 import io from 'socket.io-client';
 import currentUser from './currentUser';
 
+//socket initialization
 const socket = io('http://localhost:3000')
 socket.on('connect', function(){console.log('ws connect')})
 socket.on('disconnect', function(){console.log('ws disconnect')})
@@ -101,6 +104,7 @@ const styleTitle = {
   },
 };
 
+//custom style object for styleMap
 const customStyleMap = {
  MARK: {
    backgroundColor: 'Yellow',
@@ -108,8 +112,10 @@ const customStyleMap = {
  },
 };
 
+//using the draft-js-customstyles createStyles function to make Toolbar functional
 const { styles, customStyleFn, exporter } = createStyles(['font-size', 'color'], 'PREFIX', customStyleMap);
 
+//enables text-alignment through block style manipulation
 function getBlockStyle(block) {
   const type = block.getType()
   if(type.indexOf('text-align-') === 0) return type
@@ -117,14 +123,13 @@ function getBlockStyle(block) {
 }
 
 class Document extends React.Component {
+
   /*
     constructor()
     sets an initial state for the document
     peforms a get request to the server
     expected response is the unique document data
-
   */
-
   constructor(props) {
     super(props);
     this.state = {
@@ -166,11 +171,21 @@ class Document extends React.Component {
 
   }
 
+  /*
+    toggleFontSize(fontSize)
+    toggles the font size based on the arg fontSize
+    called by the toolbar
+  */
   toggleFontSize(fontSize) {
     const newEditorState = styles.fontSize.toggle(this.state.editorState, fontSize);
     return this.onChange(newEditorState);
   };
 
+  /*
+    addAlign(tag)
+    adds an alingnment to a block
+    called by the toolbar
+  */
   addAlign(tag) {
     return this.onChange(RichUtils.toggleBlockType(this.state.editorState, tag))
   };
@@ -224,17 +239,18 @@ class Document extends React.Component {
    this.setState({modal1Open: false});
   };
 
-  handleOpenModal2() {
+  //opens collaborator modal
+  handleOpenCollabModal() {
    this.setState({modal2Open: true});
   };
 
-  //closes title modal
-  handleCloseModal2() {
+  //closes collaborator modal
+  handleCloseCollabModal() {
    this.setState({modal2Open: false});
   };
 
-
-  handleSubmitModal2() {
+  //submits the collab modal
+  handleSubmitCollabModal() {
     fetch(`http://localhost:3000/addContributor/${this.state.id}`, {
       method: 'POST',
       headers: {
@@ -247,7 +263,7 @@ class Document extends React.Component {
       })
       .then(res => res.json())
       .then((res) => {
-        if (res.contributorAdded) { 
+        if (res.contributorAdded) {
         // only add contributors that don't already exist
         let newContributors = [...this.state.contributors]
         if(!newContributors.includes(res.contributorAdded)){
@@ -266,14 +282,17 @@ class Document extends React.Component {
       });
    };
 
+   //opens the versioning drawer
   _handleToggle() {
     this.setState({drawerOpen: !this.state.open});
   }
 
+  //closes the versioning drawer
   _handleClose() {
     this.setState({drawerOpen: false});
   }
 
+  //changes the displayed version of the document
   changeVersion(version) {
     this.state.oldVersions[version].entityMap = this.state.oldVersions[version].entityMap || {}
     this.setState({
@@ -289,20 +308,22 @@ class Document extends React.Component {
     history.push(`/user/${this.state.owner}`);
   }
 
+
+  /*
+    _handleChangeCollabModal(event)
+    stores the name of the contributor in state till it's ready to submit
+  */
+ _handleChangeCollabModal(event) {
+  this.setState({
+      tempContributor: event.target.value
+    });
+  }
+
   /*
     _handleChange(event)
-    handles the title and version changes
-    currently can only change title
+    handles the title changes
     title changes only persist after saving
-    Version change functionality doesn't work
   */
-
- _handleChangeModal2(event) {
-  this.setState({
-    tempContributor: event.target.value
-  });
-}
-
   _handleChange(event) {
     this.setState({
       title: event.target.value
@@ -311,7 +332,13 @@ class Document extends React.Component {
   }
 
 
+  /*
+    componentDidMount()
+    called after the component renders
+  */
   componentDidMount() {
+
+    //we check to see if the user is logged in
     if (!currentUser.token) {
       const savedCurrentUser = window.localStorage.getItem('currentUser');
       if (savedCurrentUser) {
@@ -321,9 +348,13 @@ class Document extends React.Component {
         return;
       }
     }
+
+    //we store the current user in the state
     this.setState({
       currentUser: currentUser,
     })
+
+    //we emit our state
     socket.emit('join-document', { docId: this.props.match.params.docId, userToken: currentUser.user._id }, (ack) => {
       if (!ack) console.error('Error joining document!');
       this.secretToken = ack.secretToken;
@@ -334,6 +365,8 @@ class Document extends React.Component {
         });
       }
     });
+
+    //and listen for state updates
     socket.on('document-update', (update) => {
       const { state, docId, userToken } = update;
       if (currentUser.user._id !== userToken) {
@@ -371,13 +404,13 @@ class Document extends React.Component {
         <FlatButton
           label="Cancel"
           primary={true}
-          onClick={this.handleCloseModal2.bind(this)}
+          onClick={this.handleCloseCollabModal.bind(this)}
         />,
         <FlatButton
           label="Submit"
           primary={true}
           keyboardFocused={true}
-          onClick={this.handleSubmitModal2.bind(this)}
+          onClick={this.handleSubmitCollabModal.bind(this)}
         />,
       ];
     return (
@@ -395,19 +428,19 @@ class Document extends React.Component {
               title={<span style={styleTitle.title}> Version {this.state.version}</span>}
               iconElementRight={<IconButton value={this.state.contributors}><PersonAdd /></IconButton> }
               onLeftIconButtonClick={this._handleToggle.bind(this) }
-              onRightIconButtonClick={() => this.handleOpenModal2()}
+              onRightIconButtonClick={() => this.handleOpenCollabModal()}
             />
             <Dialog
               title="Add collaborator"
               actions={actions2}
               modal={false}
               open={this.state.modal2Open}
-              onRequestClose={() => this.handleCloseModal2()}
+              onRequestClose={() => this.handleCloseCollabModal()}
             >
             <form>
               <label>
                 Collaborator:
-                <input type="text" name="collaborator" placeholder="Add collaborator" onChange={this._handleChangeModal2.bind(this)}/> <br/ >
+                <input type="text" name="collaborator" placeholder="Add collaborator" onChange={this._handleChangeCollabModal.bind(this)}/> <br/ >
               </label>
             </form>
             </Dialog>
@@ -477,7 +510,6 @@ class Document extends React.Component {
                 customStyleMap={customStyleMap}
                 editorState={this.state.editorState}
                 handleKeyCommand={this.handleKeyCommand}
-                // onChange={this.onChange.bind(this)}
                 onChange={(editorState) => this.onChange(editorState)}
               />
             </Paper>
@@ -493,8 +525,6 @@ class Document extends React.Component {
   /*
     STYLE FUNCTIONS
     Each function is called to format the selection in the editor.
-    The color functions could be refactored but the BOLD ITALIC and others will
-    likely need to stay
   */
 
   // changes font to BOLD

@@ -1,13 +1,14 @@
+//import react
 import React from 'react';
 import { HashRouter as Router, Route } from 'react-router-dom';
+
+// import components
 import Login from './login';
 import Register from './register';
 import User from './user';
 import Document from './document';
 
-// import Style from './styles.js';
-
-
+//connect router to components
 export default class App extends React.Component {
   render() {
     return (

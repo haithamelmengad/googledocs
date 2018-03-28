@@ -82,6 +82,7 @@ class User extends React.Component {
     at the top of the page, which is a controlled component
   */
   handleChange(event) {
+    console.log(event.target.value)
     this.setState({title: event.target.value});
  }
 
@@ -103,7 +104,7 @@ class User extends React.Component {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        title: event.target.value,
+        title: this.state.title,
         versions: convertToRaw(EditorState.createEmpty().getCurrentContent()),
       }),
     })
@@ -303,7 +304,7 @@ class User extends React.Component {
     'paddingLeft': '24px',
     'paddingRight': '24px',
     'fontWeight': 'normal',
-    
+
    },
    button: {
     "marginLeft": "25px",

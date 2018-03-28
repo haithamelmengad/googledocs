@@ -1,4 +1,4 @@
-
+// all npm imports
 import socket from 'socket.io';
 import React from 'react';
 import crypto from 'crypto';
@@ -13,30 +13,27 @@ import cookieParser from 'cookie-parser';
 import auth from './auth.js';
 import Models from './models/models.js';
 
-
+// initalize express and sockets
 const app = express();
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
 
-// import React from 'react';
-
-// import { Route } from 'react-router-dom';
-// import Style from '../src/styles.js';
-
-
+// connect to database
 const connect = process.env.MONGODB_URI;
 Mongoose.connect(connect);
 const User = Models.User;
 
-
+// add some SALT
 const SALT = 'rotten tomatoes are gross';
 const sharedDocuments = {};
 const currentState = {};
 
+// hash function
 function md5(data) {
   return crypto.createHash('md5').update(data).digest('hex');
 }
 
+// socket.io utilization
 io.on('connection', (socket) => {
   console.log('CONNECTED');
   socket.on('join-document', (docAuth, cb) => {
@@ -59,9 +56,7 @@ io.on('connection', (socket) => {
 });
 
 
-// TO GET THE CURSOR, editorState.getCursor (or something like that)
-
-
+// passport 
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -107,24 +102,7 @@ passport.use(new JwtStrategy(opts, function(jwt_payload, done) {
   });
 }));
 
-// passport.use(new LocalStrategy(
-//   (username, password, done) => {
-//     User.findOne({ username }, (err, user) => {
-//       console.log('USER', user);
-//       if (err) {
-//         return done(err);
-//       }
-//       if (!user) {
-//         return done(null, false, { message: 'Incorrect username.' });
-//       }
-//       if (user.password !== password) {
-//         return done(null, false, { message: 'Incorrect password.' });
-//       }
-//       console.log('Got to the end');
-//       return done(null, user);
-//     });
-//   },
-// ));
+
 
 app.use(passport.initialize());
 app.use(passport.session());

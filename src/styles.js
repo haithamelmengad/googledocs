@@ -4,16 +4,8 @@ const style = {
     alignItems: 'center',
     justifyContent: 'center',
     alignContent: 'center',
-    border: '1px', // not working
-    flex: '.8', //not working
-    // height: '80%', //make this a % of display
-  },
-
-  largeContainer: {
-    // height: '100%',
-    // display: 'flex',
-    // alignItems: 'center',
-    // justifyContent: 'center',
+    border: '1px',
+    flex: '.8',
   },
 
   loginBtnContainer: {

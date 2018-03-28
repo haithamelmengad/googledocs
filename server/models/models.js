@@ -25,7 +25,7 @@ const User = mongoose.model('User', userSchema);
 /* Each document has a title, content, an owner, and a list of
 contributors (which doesn't include the owner) */
 const documentSchema = new Schema({
-  content: mongoose.Schema.Types.ObjectId, 
+  content: mongoose.Schema.Types.ObjectId,
   // this will reference the state
   // url: String,
   title: String,

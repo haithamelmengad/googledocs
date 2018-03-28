@@ -21,7 +21,7 @@ class Register extends React.Component {
     this.handleRegisterClick = (history) => {
       // check if the user was successfully registered
       if (!(this.state.password === this.state.confirmPassword)) {
-        alert('Your passwords do not match!');                     // ADD A PASSWORDS DO NOT MATCH BAR
+        alert('Your passwords do not match!');                    
       } else {
         fetch('http://localhost:3000/register', {
           method: 'POST',
@@ -36,7 +36,7 @@ class Register extends React.Component {
         if (res.registered === true) {
           history.push('/');
         } else {
-          alert(res.error); 
+          alert(res.error);
         }
       });
       }
